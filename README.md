@@ -1,5 +1,7 @@
 # ⚡ Temu Quick Scraper
 
+[TEMU QUICK SCRAPER](https://stevegates24.github.io/Temu-Quick-Scraper/)
+
 Extract price, brand, seller, shipping info, and ATC URL from any Temu product page.  
 Data **persists between sessions** — close the popup, go paste in your tool, come back and the data is still there.
 
