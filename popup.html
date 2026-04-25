@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0d0d0f;
+      --s1:        #131316;
+      --s2:        #1a1a1f;
+      --s3:        #222228;
+      --border:    rgba(255,255,255,0.07);
+      --border-md: rgba(255,255,255,0.11);
+      --text:      #f0f0f2;
+      --sub:       #6b6b78;
+      --dim:       #3a3a44;
+      --orange:    #ff6b00;
+      --orange-lo: rgba(255,107,0,0.12);
+      --orange-bd: rgba(255,107,0,0.30);
+      --green:     #22c55e;
+      --green-lo:  rgba(34,197,94,0.10);
+      --red:       #ef4444;
+      --mono:      'Geist Mono', 'SF Mono', monospace;
+      --sans:      'Geist', 'SF Pro Display', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 16px 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: var(--orange-lo);
+      border: 1px solid var(--orange-bd);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 16px; height: 16px; }
+
+    .header-text { flex: 1; min-width: 0; }
+    .header-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--text); letter-spacing: -0.2px;
+      line-height: 1;
+    }
+    .header-sub {
+      font-size: 10.5px; color: var(--sub);
+      margin-top: 3px; letter-spacing: 0.1px;
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 9px; font-weight: 500;
+      color: var(--sub);
+      background: var(--s2);
+      border: 1px solid var(--border);
+      padding: 3px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+    }
+
+    /* ── STATUS ── */
+    .status {
+      padding: 0 16px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-indicator {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--dim);
+      flex-shrink: 0;
+      transition: background 0.25s;
+    }
+    .status-indicator.loading {
+      background: var(--orange);
+      animation: breathe 1.4s ease-in-out infinite;
+    }
+    .status-indicator.ok  { background: var(--green); }
+    .status-indicator.err { background: var(--red); }
+
+    @keyframes breathe {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .status-label {
+      font-size: 11px;
+      color: var(--sub);
+      letter-spacing: 0.1px;
+      transition: color 0.2s;
+    }
+    .status-label.ok  { color: var(--green); }
+    .status-label.err { color: var(--red); }
+
+    /* ── FIELDS ── */
+    .fields {
+      padding: 10px 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 38px;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.15s;
+    }
+    .field:hover { background: var(--s2); }
+    .field:hover .copy-icon { opacity: 1; }
+
+    .field.is-price { height: 48px; margin-bottom: 2px; }
+
+    .field.copied { background: var(--green-lo); }
+    .field.copied .copy-icon { opacity: 1; color: var(--green); }
+
+    /* left accent bar on hover */
+    .field::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 6px; bottom: 6px;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--orange);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .field:hover::before { opacity: 1; }
+    .field.copied::before { background: var(--green); opacity: 1; }
+
+    .field-inner {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      width: 100%;
+      padding: 0 10px 0 12px;
+    }
+
+    .field-key {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      width: 70px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .field:hover .field-key { color: var(--text); }
+
+    .field-val {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .field-val.na   { color: var(--dim); }
+    .field-val.link { color: #6b9eff; font-size: 10.5px; }
+
+    /* Price special */
+    .field.is-price .field-val {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--orange);
+      letter-spacing: -0.5px;
+      font-family: var(--sans);
+    }
+    .field.is-price .field-key {
+      font-size: 10px;
+      padding-top: 2px;
+      align-self: center;
+    }
+
+    .copy-icon {
+      width: 14px; height: 14px;
+      color: var(--sub);
+      opacity: 0;
+      flex-shrink: 0;
+      transition: opacity 0.15s, color 0.15s;
+    }
+
+    /* Shimmer */
+    .shimmer-line {
+      height: 10px;
+      border-radius: 5px;
+      width: 55%;
+      background: linear-gradient(90deg, var(--s2) 25%, var(--s3) 50%, var(--s2) 75%);
+      background-size: 300% 100%;
+      animation: sh 1.3s ease infinite;
+    }
+    .is-price .shimmer-line { height: 18px; width: 40%; border-radius: 7px; }
+    @keyframes sh { from{background-position:100% 0} to{background-position:-100% 0} }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 12px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 10px 12px 12px;
+      display: flex;
+      gap: 7px;
+    }
+
+    .btn {
+      flex: 1;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: -0.1px;
+    }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    #scrapeBtn {
+      background: var(--orange);
+      color: #fff;
+    }
+    #scrapeBtn:hover:not(:disabled) { opacity: 0.88; }
+
+    #copyAllBtn {
+      background: var(--s3);
+      color: var(--text);
+      border: 1px solid var(--border-md);
+    }
+    #copyAllBtn:hover:not(:disabled) { background: var(--s2); border-color: var(--border-md); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 8.5L6.5 12L13 5" stroke="#ff6b00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 2C4.686 2 2 4.686 2 8s2.686 6 6 6 6-2.686 6-6-2.686-6-6-6z" stroke="#ff6b00" stroke-width="1.4" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <div class="header-title">Temu Scraper</div>
+      <div class="header-sub">Click any field to copy individually</div>
+    </div>
+    <span class="badge">v1.1</span>
+  </div>
+
+  <div class="status">
+    <div class="status-indicator" id="sDot"></div>
+    <span class="status-label" id="sTxt">Ready</span>
+  </div>
+
+  <div class="fields">
+
+    <!-- Price -->
+    <div class="field is-price" id="f-price">
+      <div class="field-inner">
+        <span class="field-key">Price</span>
+        <span class="field-val na">—</span>
+        <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Brand -->
+    <div class="field" id="f-brand">
+      <div class="field-inner">
+        <span class="field-key">Brand</span>
+        <span class="field-val na">—</span>
+        <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Seller -->
+    <div class="field" id="f-seller">
+      <div class="field-inner">
+        <span class="field-key">Seller</span>
+        <span class="field-val na">—</span>
+        <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Shipping -->
+    <div class="field" id="f-shipping">
+      <div class="field-inner">
+        <span class="field-key">Shipping</span>
+        <span class="field-val na">—</span>
+        <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ATC URL -->
+    <div class="field" id="f-atc">
+      <div class="field-inner">
+        <span class="field-key">ATC URL</span>
+        <span class="field-val na link">—</span>
+        <svg class="copy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <button class="btn" id="scrapeBtn">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7" cy="7" r="5"/><path d="m13 13-2.5-2.5"/>
+      </svg>
+      Scrape
+    </button>
+    <button class="btn" id="copyAllBtn" disabled>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/>
+      </svg>
+      Copy All
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

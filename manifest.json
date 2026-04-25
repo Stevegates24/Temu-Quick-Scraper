@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Temu Quick Scraper",
+  "short_name": "Temu Scraper",
+  "version": "1.0.0",
+  "description": "Instantly extract price, brand, seller, shipping info and ATC URL from any Temu product page. Data persists between sessions — click any field to copy.",
+  "author": "Steve Gates",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardWrite",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Temu Quick Scraper",
+    "default_icon": {
+      "16":  "icon_16.png",
+      "32":  "icon_32.png",
+      "48":  "icon_48.png",
+      "128": "icon_128.png"
+    }
+  },
+  "icons": {
+    "16":  "icon_16.png",
+    "32":  "icon_32.png",
+    "48":  "icon_48.png",
+    "128": "icon_128.png"
+  },
+  "host_permissions": [
+    "https://www.temu.com/*",
+    "https://temu.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.temu.com/*",
+        "https://temu.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "temu-quick-scraper@stevegates",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": []
+      }
+    }
+  }
+}
