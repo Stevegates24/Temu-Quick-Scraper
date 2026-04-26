@@ -1,704 +1,732 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Temu Quick Scraper — by Steve Gates</title>
-  <meta name="description" content="The fastest way to extract Temu product data. Price, brand, seller, shipping & ATC URL — auto-copied to clipboard the moment you click." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" sizes="32x32"  href="icon_32.png">
+  <meta name="description" content="Extract price, brand, seller, shipping & ATC URL from any Temu product page. Auto-copied to clipboard instantly. Persists between sessions."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icon_32.png">
   <link rel="icon" type="image/png" sizes="128x128" href="icon_128.png">
   <style>
     :root {
-      --orange:     #ff6200;
-      --orange-lt:  #ff8c3a;
-      --orange-dk:  #cc4e00;
-      --bg:         #08090c;
-      --bg2:        #0d0f14;
-      --bg3:        #13151c;
-      --bg4:        #191c25;
-      --border:     rgba(255,255,255,0.07);
-      --border-lt:  rgba(255,255,255,0.12);
-      --text:       #eeeef2;
-      --text-dim:   #c2c4cc;
-      --muted:      #7a7d8f;
-      --subtle:     #4e5060;
-      --glow:       rgba(255,98,0,0.18);
-      --glow-str:   rgba(255,98,0,0.32);
+      --pu:      #8b5cf6;
+      --pu-lt:   #a78bfa;
+      --pu-dk:   #6d28d9;
+      --pu-glo:  rgba(139,92,246,0.20);
+      --pu-glos: rgba(139,92,246,0.35);
+      --pu-dim:  rgba(139,92,246,0.10);
+      --pu-bd:   rgba(139,92,246,0.25);
+      --bg:      #07080d;
+      --bg2:     #0c0d14;
+      --bg3:     #11121b;
+      --bg4:     #171823;
+      --border:  rgba(255,255,255,0.07);
+      --bord-lt: rgba(255,255,255,0.12);
+      --text:    #eeeef4;
+      --text-d:  #c0c2ce;
+      --muted:   #7678a0;
+      --subtle:  #4a4c68;
+      --green:   #22c55e;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
-      font-size: 16px; line-height: 1.6;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-    /* ─────────────────── NAV ─────────────────── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; height: 60px;
-      background: rgba(8,9,12,0.80);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      transition: background 0.3s;
-    }
-    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .nav-logo img { width:28px; height:28px; border-radius:7px; }
-    .nav-logo-text { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; color:var(--text); letter-spacing:-0.3px; }
-    .nav-links { display:flex; align-items:center; gap:28px; list-style:none; }
-    .nav-links a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:500; transition:color 0.2s; }
-    .nav-links a:hover { color:var(--text); }
-    .nav-cta {
-      background: linear-gradient(135deg, var(--orange), var(--orange-lt)) !important;
-      color: #fff !important; padding: 7px 16px; border-radius: 7px;
-      font-weight: 600 !important; font-size: 12.5px !important;
-      box-shadow: 0 2px 12px var(--glow);
-      transition: box-shadow 0.2s, transform 0.2s !important;
-    }
-    .nav-cta:hover { box-shadow: 0 4px 20px var(--glow-str) !important; transform: translateY(-1px) !important; }
+    /* ── NAV ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:900;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:60px;background:rgba(7,8,13,0.82);backdrop-filter:blur(22px);border-bottom:1px solid var(--border);transition:background .3s}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logo img{width:28px;height:28px;border-radius:7px}
+    .nav-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--text);letter-spacing:-.3px}
+    .nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-cta{background:linear-gradient(135deg,var(--pu),var(--pu-lt))!important;color:#fff!important;padding:7px 16px;border-radius:7px;font-weight:600!important;font-size:12.5px!important;box-shadow:0 2px 14px var(--pu-glo);transition:box-shadow .2s,transform .2s!important}
+    .nav-cta:hover{box-shadow:0 4px 22px var(--pu-glos)!important;transform:translateY(-1px)!important}
 
-    /* ─────────────────── HERO ─────────────────── */
-    .hero {
-      min-height: 100vh;
-      display: grid; grid-template-columns: 1fr 1fr;
-      align-items: center;
-      padding: 80px 80px 60px 80px;
-      position: relative; overflow: hidden;
-    }
+    /* ── HERO ── */
+    .hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:80px 80px 60px;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:-10%;left:-5%;width:65%;height:80%;background:radial-gradient(ellipse at 30% 40%,rgba(139,92,246,.11) 0%,transparent 65%);pointer-events:none}
+    .hero::after{content:'';position:absolute;bottom:-20%;right:0;width:55%;height:70%;background:radial-gradient(ellipse at 70% 60%,rgba(139,92,246,.07) 0%,transparent 60%);pointer-events:none}
 
-    /* Deep radial glow behind hero */
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -10%; left: -5%;
-      width: 70%; height: 80%;
-      background: radial-gradient(ellipse at 30% 40%, rgba(255,98,0,0.10) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: -20%; right: 0%;
-      width: 55%; height: 70%;
-      background: radial-gradient(ellipse at 70% 60%, rgba(255,98,0,0.07) 0%, transparent 60%);
-      pointer-events: none;
-    }
+    /* Speed lines — purple */
+    .hero-lines{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .hero-lines span{position:absolute;left:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(139,92,246,.18) 40%,transparent 100%);animation:speedLine 2.4s ease-out infinite;opacity:0}
+    .hero-lines span:nth-child(1){top:18%;width:68%;animation-delay:0s;animation-duration:2.1s}
+    .hero-lines span:nth-child(2){top:31%;width:52%;animation-delay:.5s;animation-duration:2.6s}
+    .hero-lines span:nth-child(3){top:46%;width:82%;animation-delay:.9s;animation-duration:1.9s}
+    .hero-lines span:nth-child(4){top:59%;width:44%;animation-delay:1.3s;animation-duration:2.8s}
+    .hero-lines span:nth-child(5){top:72%;width:66%;animation-delay:.3s;animation-duration:2.3s}
+    .hero-lines span:nth-child(6){top:85%;width:38%;animation-delay:1.7s;animation-duration:3s}
+    .hero-lines span:nth-child(7){top:24%;width:90%;animation-delay:.7s;animation-duration:2s}
+    .hero-lines span:nth-child(8){top:65%;width:55%;animation-delay:1.1s;animation-duration:2.5s}
+    @keyframes speedLine{0%{transform:translateX(-100%);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(115%);opacity:0}}
 
-    /* Animated speed lines */
-    .hero-lines { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-    .hero-lines span {
-      position:absolute; left:0; height:1px;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,98,0,0.18) 40%, transparent 100%);
-      animation: speedLine 2.4s ease-out infinite; opacity:0;
-    }
-    .hero-lines span:nth-child(1){top:18%;width:68%;animation-delay:0s;   animation-duration:2.1s}
-    .hero-lines span:nth-child(2){top:31%;width:52%;animation-delay:0.5s; animation-duration:2.6s}
-    .hero-lines span:nth-child(3){top:46%;width:82%;animation-delay:0.9s; animation-duration:1.9s}
-    .hero-lines span:nth-child(4){top:59%;width:44%;animation-delay:1.3s; animation-duration:2.8s}
-    .hero-lines span:nth-child(5){top:72%;width:66%;animation-delay:0.3s; animation-duration:2.3s}
-    .hero-lines span:nth-child(6){top:85%;width:38%;animation-delay:1.7s; animation-duration:3.0s}
-    .hero-lines span:nth-child(7){top:24%;width:90%;animation-delay:0.7s; animation-duration:2.0s}
-    .hero-lines span:nth-child(8){top:65%;width:55%;animation-delay:1.1s; animation-duration:2.5s}
-    @keyframes speedLine {
-      0%   { transform:translateX(-100%); opacity:0; }
-      10%  { opacity:1; }
-      90%  { opacity:1; }
-      100% { transform:translateX(115%); opacity:0; }
-    }
+    .hero-watermark{position:absolute;right:-30px;top:50%;transform:translateY(-50%);font-family:'Syne',sans-serif;font-size:460px;font-weight:800;color:rgba(139,92,246,.04);line-height:1;pointer-events:none;user-select:none}
 
-    /* Giant faded T watermark */
-    .hero-watermark {
-      position:absolute; right:-30px; top:50%;
-      transform:translateY(-50%);
-      font-family:'Syne',sans-serif; font-size:460px; font-weight:800;
-      color:rgba(255,98,0,0.04); line-height:1;
-      pointer-events:none; user-select:none; letter-spacing:-20px;
-    }
+    .hero-left{position:relative;z-index:2}
+    .hero-kicker{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--pu-lt);background:rgba(139,92,246,.09);border:1px solid var(--pu-bd);padding:5px 13px;border-radius:100px;margin-bottom:28px;letter-spacing:.4px;animation:fadeUp .5s ease both;box-shadow:0 0 18px rgba(139,92,246,.08)}
+    .kicker-dot{width:5px;height:5px;border-radius:50%;background:var(--pu);animation:blip 1.6s ease-in-out infinite}
+    @keyframes blip{0%,100%{opacity:1}50%{opacity:.2}}
 
-    .hero-left { position:relative; z-index:2; }
+    .hero-title{font-family:'Syne',sans-serif;font-size:clamp(52px,7vw,90px);font-weight:800;line-height:.95;letter-spacing:-4px;margin-bottom:24px;animation:fadeUp .6s .1s ease both;color:var(--text)}
+    .hero-title em{font-style:normal;color:var(--pu-lt)}
+    .hero-title .ul{position:relative;display:inline-block}
+    .hero-title .ul::after{content:'';position:absolute;left:0;right:0;bottom:5px;height:4px;background:linear-gradient(90deg,var(--pu),var(--pu-lt));border-radius:3px;transform:scaleX(0);transform-origin:left;animation:drawLine .7s .8s cubic-bezier(.22,1,.36,1) forwards;box-shadow:0 0 12px var(--pu-glo)}
+    @keyframes drawLine{to{transform:scaleX(1)}}
 
-    .hero-kicker {
-      display:inline-flex; align-items:center; gap:7px;
-      font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500;
-      color:var(--orange-lt);
-      background: rgba(255,98,0,0.08);
-      border: 1px solid rgba(255,98,0,0.22);
-      padding:5px 13px; border-radius:100px; margin-bottom:28px; letter-spacing:0.4px;
-      animation: fadeUp 0.5s ease both;
-      box-shadow: 0 0 18px rgba(255,98,0,0.08);
-    }
-    .kicker-dot { width:5px; height:5px; border-radius:50%; background:var(--orange); animation:blip 1.6s ease-in-out infinite; }
-    @keyframes blip { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .hero-sub{font-size:17px;color:var(--muted);max-width:440px;font-weight:400;line-height:1.65;margin-bottom:40px;animation:fadeUp .6s .2s ease both}
+    .hero-sub strong{color:var(--text-d);font-weight:600}
 
-    .hero-title {
-      font-family:'Syne',sans-serif;
-      font-size: clamp(52px,7vw,90px); font-weight:800;
-      line-height:0.95; letter-spacing:-4px;
-      margin-bottom:24px;
-      animation: fadeUp 0.6s 0.1s ease both;
-      color: var(--text);
-    }
-    .hero-title em { font-style:normal; color:var(--orange); }
-    .hero-title .ul { position:relative; display:inline-block; }
-    .hero-title .ul::after {
-      content:''; position:absolute; left:0; right:0; bottom:5px;
-      height:4px;
-      background: linear-gradient(90deg, var(--orange), var(--orange-lt));
-      border-radius:3px;
-      transform:scaleX(0); transform-origin:left;
-      animation: drawLine 0.7s 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
-      box-shadow: 0 0 12px var(--glow);
-    }
-    @keyframes drawLine { to { transform:scaleX(1); } }
+    .hero-buttons{display:flex;gap:10px;animation:fadeUp .6s .3s ease both}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--pu),var(--pu-lt));color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:13px 24px;border-radius:9px;transition:transform .25s,box-shadow .25s;box-shadow:0 4px 22px var(--pu-glo),0 1px 0 rgba(255,255,255,.1) inset}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--pu-glos)}
+    .btn-ghost{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);color:var(--text-d);text-decoration:none;font-weight:500;font-size:14px;padding:12px 22px;border-radius:9px;border:1.5px solid var(--bord-lt);transition:background .2s,border-color .2s,transform .2s}
+    .btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-    .hero-sub {
-      font-size:17px; color:var(--muted); max-width:440px;
-      font-weight:400; line-height:1.65; margin-bottom:40px;
-      animation: fadeUp 0.6s 0.2s ease both;
-    }
-    .hero-sub strong { color:var(--text-dim); font-weight:600; }
+    /* ── POPUP MOCKUP (hero) ── */
+    .hero-right{display:flex;align-items:center;justify-content:center;position:relative;z-index:2;animation:fadeUp .9s .4s ease both}
+    .mockup-wrap{position:relative}
+    .mockup-wrap::before{content:'';position:absolute;inset:20px -10px -30px 10px;background:radial-gradient(ellipse,rgba(139,92,246,.22) 0%,transparent 70%);filter:blur(28px);pointer-events:none;animation:glowPulse 3s ease-in-out infinite}
+    @keyframes glowPulse{0%,100%{opacity:.7}50%{opacity:1}}
 
-    .hero-buttons { display:flex; gap:10px; animation: fadeUp 0.6s 0.3s ease both; }
-    .btn-primary {
-      display:inline-flex; align-items:center; gap:8px;
-      background: linear-gradient(135deg, var(--orange) 0%, var(--orange-lt) 100%);
-      color:#fff; text-decoration:none;
-      font-weight:600; font-size:14px; padding:13px 24px; border-radius:9px;
-      transition: transform 0.25s, box-shadow 0.25s;
-      box-shadow: 0 4px 20px var(--glow), 0 1px 0 rgba(255,255,255,0.12) inset;
-    }
-    .btn-primary:hover { transform:translateY(-2px); box-shadow: 0 8px 30px var(--glow-str); }
-    .btn-ghost {
-      display:inline-flex; align-items:center; gap:8px;
-      background: rgba(255,255,255,0.04);
-      color: var(--text-dim); text-decoration:none;
-      font-weight:500; font-size:14px; padding:12px 22px; border-radius:9px;
-      border: 1.5px solid var(--border-lt);
-      transition: background 0.2s, border-color 0.2s, transform 0.2s;
-    }
-    .btn-ghost:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); transform:translateY(-1px); }
+    .popup-mockup{width:300px;background:#080910;border-radius:16px;border:1px solid rgba(255,255,255,.10);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6),0 4px 16px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.04)}
+    .pm-hdr{padding:12px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0e17}
+    .pm-hdr img{width:26px;height:26px;border-radius:7px}
+    .pm-hdr-text{flex:1}
+    .pm-hdr-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f0f0f4}
+    .pm-hdr-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4e506a;margin-top:1px}
+    .pm-hdr-badge{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#5a5c7e;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);padding:2px 6px;border-radius:4px}
+    .pm-status{padding:0 14px;height:30px;display:flex;align-items:center;gap:7px;background:#060710;border-bottom:1px solid rgba(255,255,255,.05)}
+    .pm-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+    .pm-stxt{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--green)}
+    .pm-fields{padding:9px 10px 7px;display:flex;flex-direction:column;gap:3px}
+    .pm-field{display:flex;align-items:center;height:34px;border-radius:6px;padding:0 9px 0 10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+    .pm-field.is-price{height:44px;margin-bottom:2px;background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.22)}
+    .pm-fkey{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:500;color:#4e506a;text-transform:uppercase;letter-spacing:.7px;width:58px;flex-shrink:0}
+    .pm-fval{font-family:'JetBrains Mono',monospace;font-size:10px;color:#e4e4ee;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pm-field.is-price .pm-fval{font-size:20px;font-weight:700;color:var(--pu-lt);font-family:'Syne',sans-serif;letter-spacing:-.5px}
+    .pm-fval.link{color:#6b9eff;font-size:8.5px}
+    .pm-div{height:1px;background:rgba(255,255,255,.05);margin:2px 0}
+    .pm-footer{padding:8px 10px 10px;display:flex;gap:6px;border-top:1px solid rgba(255,255,255,.05)}
+    .pm-btn{flex:1;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:4px;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer}
+    .pm-btn-s{background:linear-gradient(135deg,var(--pu),var(--pu-lt));color:#fff;box-shadow:0 2px 10px var(--pu-glo)}
+    .pm-btn-c{background:rgba(255,255,255,.05);color:#e4e4ee;border:1px solid rgba(255,255,255,.08)}
 
-    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    .badge-float{position:absolute;background:var(--bg3);border:1px solid var(--bord-lt);border-radius:100px;padding:6px 14px;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.4);white-space:nowrap;font-size:11.5px;font-weight:600;color:var(--text)}
+    .badge-float.top{top:-14px;right:-20px}
+    .badge-float.bot{bottom:-14px;left:-20px}
+    .badge-float .acc{color:var(--pu-lt)}
 
-    /* ─────────── POPUP MOCKUP ─────────── */
-    .hero-right {
-      display:flex; align-items:center; justify-content:center;
-      position:relative; z-index:2;
-      animation: fadeUp 0.9s 0.4s ease both;
-    }
-    .mockup-wrap { position:relative; }
-    .mockup-wrap::before {
-      content:''; position:absolute; inset:20px -10px -30px 10px;
-      background: radial-gradient(ellipse, rgba(255,98,0,0.22) 0%, transparent 70%);
-      filter:blur(28px); pointer-events:none;
-      animation: glowPulse 3s ease-in-out infinite;
-    }
-    @keyframes glowPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+    /* ── STATS ── */
+    .stats-strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);display:grid;grid-template-columns:repeat(4,1fr);position:relative}
+    .stat-item{padding:36px 20px;text-align:center;border-right:1px solid var(--border);position:relative;overflow:hidden;transition:background .25s}
+    .stat-item:hover{background:var(--bg3)}
+    .stat-item::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:28px;height:2px;background:var(--pu);border-radius:2px 2px 0 0;box-shadow:0 0 8px var(--pu-glo)}
+    .stat-item:last-child{border-right:none}
+    .stat-num{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-3px}
+    .stat-num b{color:var(--pu-lt);font-weight:inherit}
+    .stat-label{font-size:12.5px;color:var(--muted);margin-top:6px}
 
-    .popup-mockup {
-      width:300px; background:#0a0b0f;
-      border-radius:16px; border:1px solid rgba(255,255,255,0.10);
-      overflow:hidden;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
-    }
-    .pm-hdr { padding:12px 14px; display:flex; align-items:center; gap:9px; border-bottom:1px solid rgba(255,255,255,0.07); background:#0f1015; }
-    .pm-hdr img { width:26px; height:26px; border-radius:7px; }
-    .pm-hdr-text { flex:1; }
-    .pm-hdr-title { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:#f0f0f2; }
-    .pm-hdr-sub   { font-family:'JetBrains Mono',monospace; font-size:9px; color:#4e5060; margin-top:1px; }
-    .pm-hdr-badge { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:#5a5a6e; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.07); padding:2px 6px; border-radius:4px; }
-    .pm-status { padding:0 14px; height:30px; display:flex; align-items:center; gap:7px; background:#080a0d; border-bottom:1px solid rgba(255,255,255,0.05); }
-    .pm-status-dot { width:5px; height:5px; border-radius:50%; background:#22c55e; box-shadow:0 0 6px #22c55e; }
-    .pm-status-txt { font-family:'JetBrains Mono',monospace; font-size:9.5px; color:#22c55e; }
-    .pm-fields { padding:9px 10px 7px; display:flex; flex-direction:column; gap:3px; }
-    .pm-field { display:flex; align-items:center; height:34px; border-radius:6px; padding:0 9px 0 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); transition:background 0.2s; }
-    .pm-field:hover { background:rgba(255,255,255,0.055); }
-    .pm-field.is-price { height:44px; margin-bottom:2px; background:rgba(255,98,0,0.07); border-color:rgba(255,98,0,0.2); }
-    .pm-fkey { font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:500; color:#4e5060; text-transform:uppercase; letter-spacing:0.7px; width:58px; flex-shrink:0; }
-    .pm-fval { font-family:'JetBrains Mono',monospace; font-size:10px; color:#e4e4e7; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .pm-field.is-price .pm-fval { font-size:20px; font-weight:700; color:#ff9a45; font-family:'Syne',sans-serif; letter-spacing:-0.5px; }
-    .pm-fval.link { color:#6b9eff; font-size:8.5px; }
-    .pm-div { height:1px; background:rgba(255,255,255,0.05); margin:2px 0; }
-    .pm-footer { padding:8px 10px 10px; display:flex; gap:6px; border-top:1px solid rgba(255,255,255,0.05); }
-    .pm-btn { flex:1; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:4px; font-family:'Inter',sans-serif; font-size:11px; font-weight:500; cursor:pointer; }
-    .pm-btn-s { background:linear-gradient(135deg,var(--orange),var(--orange-lt)); color:#fff; box-shadow:0 2px 10px var(--glow); }
-    .pm-btn-c { background:rgba(255,255,255,0.05); color:#e4e4e7; border:1px solid rgba(255,255,255,0.08); }
+    /* ── SECTION COMMONS ── */
+    .section{max-width:1060px;margin:0 auto;padding:96px 24px}
+    .section-tag{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--pu-lt);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+    .section-tag::before{content:'—';color:var(--pu-dk)}
+    .section-title{font-family:'Syne',sans-serif;font-size:clamp(34px,5vw,54px);font-weight:800;letter-spacing:-2.5px;line-height:1.02;margin-bottom:16px;color:var(--text)}
+    .section-body{font-size:16px;color:var(--muted);max-width:500px;line-height:1.7}
 
-    /* Floating badges */
-    .badge-float {
-      position:absolute;
-      background: var(--bg3);
-      border: 1px solid var(--border-lt);
-      border-radius:100px; padding:6px 14px;
-      display:flex; align-items:center; gap:7px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      white-space:nowrap; font-size:11.5px; font-weight:600; color:var(--text);
-    }
-    .badge-float.top { top:-14px; right:-20px; }
-    .badge-float.bot { bottom:-14px; left:-20px; }
-    .badge-float span.accent { color:var(--orange); }
+    /* ── FEATURES ── */
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:52px}
+    .feature-card{background:var(--bg2);padding:32px 28px;position:relative;transition:background .25s}
+    .feature-card:hover{background:var(--bg3)}
+    .fc-bar{position:absolute;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--pu),var(--pu-lt));transition:width .4s ease;box-shadow:0 0 8px var(--pu-glo)}
+    .feature-card:hover .fc-bar{width:100%}
+    .feature-icon{font-size:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:rgba(139,92,246,.09);border-radius:10px;border:1px solid var(--pu-bd);transition:box-shadow .2s}
+    .feature-card:hover .feature-icon{box-shadow:0 0 16px rgba(139,92,246,.2)}
+    .feature-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px;letter-spacing:-.3px;color:var(--text)}
+    .feature-desc{font-size:13px;color:var(--muted);line-height:1.7}
 
-    /* ─────────────────── STATS ─────────────────── */
-    .stats-strip {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--bg2);
-      display: grid; grid-template-columns: repeat(4,1fr);
-      position: relative;
-    }
-    .stats-strip::before {
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,98,0,0.03) 50%, transparent 100%);
-      pointer-events:none;
-    }
-    .stat-item {
-      padding:36px 20px; text-align:center;
-      border-right: 1px solid var(--border);
-      position:relative; overflow:hidden;
-      transition: background 0.25s;
-    }
-    .stat-item:hover { background: var(--bg3); }
-    .stat-item::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:2px; background:var(--orange); border-radius:2px 2px 0 0; box-shadow:0 0 8px var(--glow); }
-    .stat-item:last-child { border-right:none; }
-    .stat-num { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; color:var(--text); line-height:1; letter-spacing:-3px; }
-    .stat-num b { color:var(--orange); font-weight:inherit; }
-    .stat-label { font-size:12.5px; color:var(--muted); margin-top:6px; }
+    /* ── INTERACTIVE DEMO ── */
+    .demo-wrap{background:var(--bg2);padding:100px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+    .demo-wrap::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:500px;height:1px;background:linear-gradient(90deg,transparent,var(--pu),transparent)}
+    .demo-inner{max-width:1000px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+    .demo-text .section-title{font-size:clamp(28px,4vw,44px)}
 
-    /* ─────────────────── SECTIONS ─────────────────── */
-    .section { max-width:1060px; margin:0 auto; padding:96px 24px; }
-    .section-tag {
-      display:inline-flex; align-items:center; gap:8px;
-      font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500;
-      color:var(--orange-lt); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;
-    }
-    .section-tag::before { content:'—'; color:var(--orange-dk); }
-    .section-title { font-family:'Syne',sans-serif; font-size:clamp(34px,5vw,54px); font-weight:800; letter-spacing:-2.5px; line-height:1.02; margin-bottom:16px; color:var(--text); }
-    .section-body { font-size:16px; color:var(--muted); max-width:500px; line-height:1.7; }
+    .demo-steps-list{margin-top:28px;display:flex;flex-direction:column;gap:0}
+    .demo-step-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .2s;opacity:.45}
+    .demo-step-item:last-child{border-bottom:none}
+    .demo-step-item.active{opacity:1}
+    .demo-step-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--pu-bd);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:var(--pu-lt);flex-shrink:0;transition:background .2s,border-color .2s}
+    .demo-step-item.active .demo-step-num{background:rgba(139,92,246,.15);border-color:var(--pu)}
+    .demo-step-label{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+    .demo-step-desc{font-size:13px;color:var(--muted);line-height:1.6}
 
-    /* ─────────────────── FEATURES ─────────────────── */
-    .features-grid {
-      display:grid; grid-template-columns:repeat(3,1fr);
-      gap:1px; background:var(--border);
-      border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-top:52px;
-    }
-    .feature-card {
-      background: var(--bg2); padding:32px 28px; position:relative;
-      transition: background 0.25s;
-    }
-    .feature-card:hover { background:var(--bg3); }
-    .fc-bar { position:absolute; top:0; left:0; height:2px; width:0; background:linear-gradient(90deg,var(--orange),var(--orange-lt)); transition:width 0.4s ease; box-shadow:0 0 8px var(--glow); }
-    .feature-card:hover .fc-bar { width:100%; }
-    .feature-icon {
-      font-size:18px; margin-bottom:16px; display:flex; align-items:center; justify-content:center;
-      width:42px; height:42px; background:rgba(255,98,0,0.09); border-radius:10px;
-      border:1px solid rgba(255,98,0,0.16);
-      transition: box-shadow 0.2s;
-    }
-    .feature-card:hover .feature-icon { box-shadow:0 0 16px rgba(255,98,0,0.2); }
-    .feature-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:8px; letter-spacing:-0.3px; color:var(--text); }
-    .feature-desc { font-size:13px; color:var(--muted); line-height:1.7; }
+    /* Animated popup demo on the right */
+    .demo-mockup-wrap{position:relative;display:flex;justify-content:center}
+    .demo-mockup-wrap::before{content:'';position:absolute;inset:20px -10px -30px 10px;background:radial-gradient(ellipse,rgba(139,92,246,.18) 0%,transparent 70%);filter:blur(30px);pointer-events:none}
+    .demo-popup{width:280px;background:#080910;border-radius:14px;border:1px solid rgba(255,255,255,.10);overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);position:relative;z-index:1}
+    .demo-popup-hdr{padding:10px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.07);background:#0d0e17}
+    .demo-popup-hdr img{width:22px;height:22px;border-radius:6px}
+    .demo-popup-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#f0f0f4;flex:1}
+    .demo-popup-badge{font-family:'JetBrains Mono',monospace;font-size:8px;color:#5a5c7e;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);padding:2px 5px;border-radius:4px}
 
-    /* ─────────────────── HOW IT WORKS ─────────────────── */
-    .how-wrap {
-      background: var(--bg2);
-      padding:100px 0;
-      border-top:1px solid var(--border);
-      border-bottom:1px solid var(--border);
-      position:relative; overflow:hidden;
-    }
-    .how-wrap::before {
-      content:'';
-      position:absolute; top:0; left:50%; transform:translateX(-50%);
-      width:600px; height:2px;
-      background: linear-gradient(90deg, transparent, rgba(255,98,0,0.4), transparent);
-    }
-    .how-inner { max-width:680px; margin:0 auto; padding:0 24px; }
-    .how-inner .section-tag { color:var(--orange-lt); }
-    .how-inner .section-title { color:var(--text); }
-    .steps { margin-top:52px; display:flex; flex-direction:column; }
-    .step {
-      display:grid; grid-template-columns:46px 1fr; gap:20px;
-      padding:28px 0; border-bottom:1px solid var(--border);
-      opacity:0; transform:translateY(16px);
-      transition: opacity 0.55s, transform 0.55s;
-    }
-    .step.visible { opacity:1; transform:translateY(0); }
-    .step:last-child { border-bottom:none; }
-    .step-num {
-      width:40px; height:40px;
-      border:1.5px solid rgba(255,98,0,0.3); border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-family:'Syne',sans-serif; font-weight:800; font-size:15px; color:var(--orange);
-      background: rgba(255,98,0,0.06);
-      box-shadow: 0 0 12px rgba(255,98,0,0.1);
-    }
-    .step-title { font-family:'Syne',sans-serif; font-size:19px; font-weight:700; color:var(--text); letter-spacing:-0.4px; margin-bottom:7px; }
-    .step-desc { font-size:14px; color:var(--muted); line-height:1.65; }
-    .step-code {
-      margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:11.5px;
-      background:rgba(255,98,0,0.07); border:1px solid rgba(255,98,0,0.18);
-      border-radius:6px; padding:8px 13px; color:var(--orange-lt); display:inline-block;
-    }
+    .demo-status{padding:0 12px;height:28px;display:flex;align-items:center;gap:6px;background:#060710;border-bottom:1px solid rgba(255,255,255,.05)}
+    .demo-sdot{width:5px;height:5px;border-radius:50%;background:var(--subtle);transition:background .4s,box-shadow .4s}
+    .demo-sdot.loading{background:var(--pu);box-shadow:0 0 6px var(--pu);animation:blip 1s ease-in-out infinite}
+    .demo-sdot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .demo-stxt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);transition:color .4s}
+    .demo-stxt.ok{color:var(--green)}
 
-    /* ─────────────────── DATA FIELDS ─────────────────── */
-    .fields-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; margin-top:52px; }
-    .field-card {
-      background: var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-      position:relative; overflow:hidden;
-    }
-    .field-card::before {
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(135deg, rgba(255,98,0,0.04) 0%, transparent 60%);
-      opacity:0; transition:opacity 0.25s;
-    }
-    .field-card:hover { border-color:rgba(255,98,0,0.4); transform:translateY(-3px); box-shadow:0 8px 24px rgba(255,98,0,0.12); }
-    .field-card:hover::before { opacity:1; }
-    .field-card-icon {
-      width:36px; height:36px; border-radius:8px;
-      background:rgba(255,98,0,0.09); border:1px solid rgba(255,98,0,0.15);
-      display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:13px;
-    }
-    .field-card-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; letter-spacing:-0.3px; margin-bottom:4px; color:var(--text); }
-    .field-card-eg { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--subtle); }
-    .field-card-eg span { color:var(--orange-lt); }
+    .demo-fields-area{padding:8px 9px 6px;display:flex;flex-direction:column;gap:3px}
+    .demo-field{display:flex;align-items:center;height:32px;border-radius:5px;padding:0 8px 0 9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);transition:background .3s,border-color .3s}
+    .demo-field.is-price{height:40px;margin-bottom:2px;background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.15)}
+    .demo-field.flash{background:rgba(139,92,246,.14);border-color:rgba(139,92,246,.35)}
+    .demo-fkey{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:500;color:#4e506a;text-transform:uppercase;letter-spacing:.7px;width:52px;flex-shrink:0}
+    .demo-fval{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:#e4e4ee;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .3s}
+    .demo-field.is-price .demo-fval{font-size:18px;font-weight:700;color:var(--pu-lt);font-family:'Syne',sans-serif;letter-spacing:-.5px}
+    .demo-fval.link{color:#6b9eff;font-size:8.5px}
+    .demo-fval.empty{color:var(--subtle)}
+    .demo-div{height:1px;background:rgba(255,255,255,.05);margin:2px 0}
 
-    /* ─────────────────── INSTALL ─────────────────── */
-    .install-wrap {
-      background: var(--bg2); padding:100px 0;
-      border-top:1px solid var(--border);
-    }
-    .install-inner { max-width:860px; margin:0 auto; padding:0 24px; }
-    .browser-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:48px; }
-    .browser-card {
-      background: var(--bg3); border:1px solid var(--border); border-radius:16px; padding:28px 26px;
-      text-decoration:none; display:block;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-      position:relative; overflow:hidden;
-    }
-    .browser-card::after {
-      content:''; position:absolute; inset:0;
-      background: linear-gradient(135deg,rgba(255,98,0,0.06) 0%,transparent 60%);
-      opacity:0; transition:opacity 0.25s;
-    }
-    .browser-card:hover { border-color:rgba(255,98,0,0.4); transform:translateY(-3px); box-shadow:0 12px 36px rgba(255,98,0,0.14); }
-    .browser-card:hover::after { opacity:1; }
-    .browser-emoji { font-size:30px; margin-bottom:13px; }
-    .browser-name { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; letter-spacing:-0.5px; margin-bottom:6px; color:var(--text); }
-    .browser-desc { font-size:13px; color:var(--muted); line-height:1.6; }
-    .browser-arrow { margin-top:16px; color:var(--orange); font-size:18px; font-weight:600; transition:transform 0.2s; display:inline-block; }
-    .browser-card:hover .browser-arrow { transform:translateX(5px); }
-    .manual-box {
-      margin-top:24px; background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:28px;
-    }
-    .manual-box h3 { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:12px; color:var(--text); }
-    .manual-box ol { padding-left:20px; display:flex; flex-direction:column; gap:8px; }
-    .manual-box li { font-size:13.5px; color:var(--muted); line-height:1.6; }
-    .manual-box li strong { color:var(--text-dim); }
-    code {
-      font-family:'JetBrains Mono',monospace; font-size:0.88em;
-      color:var(--orange-lt); background:rgba(255,98,0,0.09);
-      padding:2px 6px; border-radius:4px; border:1px solid rgba(255,98,0,0.15);
-    }
+    .demo-popup-footer{padding:7px 9px 9px;display:flex;gap:5px;border-top:1px solid rgba(255,255,255,.05)}
+    .demo-pbtn{flex:1;height:29px;border-radius:5px;display:flex;align-items:center;justify-content:center;gap:4px;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;cursor:pointer;transition:opacity .2s}
+    .demo-pbtn.scrape{background:linear-gradient(135deg,var(--pu),var(--pu-lt));color:#fff;box-shadow:0 2px 8px var(--pu-glo)}
+    .demo-pbtn.scrape:hover{opacity:.85}
+    .demo-pbtn.copy{background:rgba(255,255,255,.05);color:#e4e4ee;border:1px solid rgba(255,255,255,.08)}
 
-    /* ─────────────────── FOOTER ─────────────────── */
-    footer {
-      border-top:1px solid var(--border); padding:40px;
-      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
-      background: var(--bg);
-    }
-    .footer-left { display:flex; align-items:center; gap:10px; }
-    .footer-left img { width:24px; height:24px; border-radius:6px; }
-    .footer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; color:var(--text); }
-    .footer-logo span { color:var(--orange); }
-    .footer-byline { font-size:12px; color:var(--subtle); margin-top:3px; }
-    .footer-right { text-align:right; }
-    .footer-right a { color:var(--orange-lt); text-decoration:none; font-size:13px; font-weight:500; transition:color 0.2s; }
-    .footer-right a:hover { color:#fff; }
-    .footer-right p { font-size:11.5px; color:var(--subtle); margin-top:4px; }
+    /* settings demo panel */
+    .demo-settings{padding:0 9px;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;border-top:0px solid rgba(255,255,255,.05)}
+    .demo-settings.open{max-height:120px;padding:10px 9px;border-top:1px solid rgba(255,255,255,.07)}
+    .demo-mode-label{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:500;color:var(--subtle);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+    .demo-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+    .demo-mode-btn{padding:6px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);font-family:'Inter',sans-serif;font-size:9.5px;font-weight:500;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+    .demo-mode-btn.active{background:rgba(139,92,246,.14);border-color:rgba(139,92,246,.35);color:var(--pu-lt)}
+    .demo-mode-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--subtle);display:block;margin-top:2px}
+    .demo-mode-btn.active .demo-mode-sub{color:var(--pu)}
 
-    /* ─────────────────── REVEAL ─────────────────── */
-    .reveal { opacity:0; transform:translateY(24px); transition:opacity 0.65s ease,transform 0.65s ease; }
-    .reveal.visible { opacity:1; transform:translateY(0); }
+    .demo-gear-badge{position:absolute;top:-15px;z-index:-10;right:-49px;background:var(--bg3);border:1px solid var(--bord-lt);border-radius:100px;padding:5px 12px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text);box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
+    .demo-gear-badge .acc{color:var(--pu-lt)}
 
-    /* ─────────────────── RESPONSIVE ─────────────────── */
-    @media (max-width:900px) {
-      .hero { grid-template-columns:1fr; text-align:center; padding:100px 24px 60px; }
-      .hero-sub { margin:0 auto 40px; }
-      .hero-buttons { justify-content:center; }
-      .hero-right { margin-top:52px; }
-      .hero-lines,.hero-watermark { display:none; }
-      .features-grid { grid-template-columns:1fr 1fr; }
+    /* ── SETTINGS SECTION ── */
+    .settings-section{max-width:1060px;margin:0 auto;padding:0 24px 96px}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:52px}
+    .setting-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+    .setting-card:hover{border-color:var(--pu-bd);transform:translateY(-2px)}
+    .setting-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pu),var(--pu-lt));opacity:0;transition:opacity .25s}
+    .setting-card:hover::before{opacity:1}
+    .setting-card-badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:500;padding:4px 10px;border-radius:100px;margin-bottom:14px}
+    .setting-card-badge.fast{background:rgba(139,92,246,.1);color:var(--pu-lt);border:1px solid var(--pu-bd)}
+    .setting-card-badge.modal{background:rgba(34,197,94,.08);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+    .setting-card-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px;color:var(--text)}
+    .setting-card-desc{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+    .setting-card-meta{display:flex;flex-direction:column;gap:6px}
+    .setting-meta-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+    .setting-meta-row .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+    .setting-meta-row .dot.pu{background:var(--pu-lt)}
+    .setting-meta-row .dot.gr{background:var(--green)}
+    .setting-meta-row strong{color:var(--text-d);font-weight:500}
+
+    /* ── HOW IT WORKS ── */
+    .how-wrap{background:var(--bg2);padding:100px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+    .how-wrap::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.4),transparent)}
+    .how-inner{max-width:680px;margin:0 auto;padding:0 24px}
+    .steps{margin-top:52px;display:flex;flex-direction:column}
+    .step{display:grid;grid-template-columns:46px 1fr;gap:20px;padding:28px 0;border-bottom:1px solid var(--border);opacity:0;transform:translateY(16px);transition:opacity .55s,transform .55s}
+    .step.visible{opacity:1;transform:translateY(0)}
+    .step:last-child{border-bottom:none}
+    .step-num{width:40px;height:40px;border:1.5px solid var(--pu-bd);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--pu-lt);background:rgba(139,92,246,.06);box-shadow:0 0 12px rgba(139,92,246,.1)}
+    .step-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.4px;margin-bottom:7px}
+    .step-desc{font-size:14px;color:var(--muted);line-height:1.65}
+    .step-code{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(139,92,246,.07);border:1px solid var(--pu-bd);border-radius:6px;padding:8px 13px;color:var(--pu-lt);display:inline-block}
+
+    /* ── DATA FIELDS ── */
+    .fields-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:52px}
+    .field-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s}
+    .field-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(139,92,246,.05) 0%,transparent 60%);opacity:0;transition:opacity .25s}
+    .field-card:hover{border-color:var(--pu-bd);transform:translateY(-3px);box-shadow:0 8px 24px rgba(139,92,246,.12)}
+    .field-card:hover::before{opacity:1}
+    .field-card-icon{width:36px;height:36px;border-radius:8px;background:rgba(139,92,246,.09);border:1px solid var(--pu-bd);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:13px}
+    .field-card-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px;color:var(--text)}
+    .field-card-eg{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--subtle)}
+    .field-card-eg span{color:var(--pu-lt)}
+
+    /* ── INSTALL ── */
+    .install-wrap{background:var(--bg2);padding:100px 0;border-top:1px solid var(--border)}
+    .install-inner{max-width:860px;margin:0 auto;padding:0 24px}
+    .browser-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px}
+    .browser-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:28px 26px;text-decoration:none;display:block;transition:border-color .25s,transform .25s,box-shadow .25s;position:relative;overflow:hidden}
+    .browser-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(139,92,246,.06) 0%,transparent 60%);opacity:0;transition:opacity .25s}
+    .browser-card:hover{border-color:var(--pu-bd);transform:translateY(-3px);box-shadow:0 12px 36px rgba(139,92,246,.14)}
+    .browser-card:hover::after{opacity:1}
+    .browser-emoji{font-size:30px;margin-bottom:13px}
+    .browser-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;color:var(--text)}
+    .browser-desc{font-size:13px;color:var(--muted);line-height:1.6}
+    .browser-arrow{margin-top:16px;color:var(--pu-lt);font-size:18px;font-weight:600;transition:transform .2s;display:inline-block}
+    .browser-card:hover .browser-arrow{transform:translateX(5px)}
+    .manual-box{margin-top:24px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:28px}
+    .manual-box h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text)}
+    .manual-box ol{padding-left:20px;display:flex;flex-direction:column;gap:8px}
+    .manual-box li{font-size:13.5px;color:var(--muted);line-height:1.6}
+    .manual-box li strong{color:var(--text-d)}
+    code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--pu-lt);background:rgba(139,92,246,.09);padding:2px 6px;border-radius:4px;border:1px solid var(--pu-bd)}
+
+    /* ── FOOTER ── */
+    footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:var(--bg)}
+    .footer-left{display:flex;align-items:center;gap:10px}
+    .footer-left img{width:24px;height:24px;border-radius:6px}
+    .footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--text)}
+    .footer-logo span{color:var(--pu-lt)}
+    .footer-byline{font-size:12px;color:var(--subtle);margin-top:3px}
+    .footer-right{text-align:right}
+    .footer-right a{color:var(--pu-lt);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+    .footer-right a:hover{color:#fff}
+    .footer-right p{font-size:11.5px;color:var(--subtle);margin-top:4px}
+
+    /* ── REVEAL ── */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;text-align:center;padding:100px 24px 60px}
+      .hero-sub{margin:0 auto 40px}
+      .hero-buttons{justify-content:center}
+      .hero-right{margin-top:52px}
+      .hero-lines,.hero-watermark{display:none}
+      .features-grid{grid-template-columns:1fr 1fr}
+      .demo-inner{grid-template-columns:1fr;gap:40px}
+      .settings-grid{grid-template-columns:1fr}
     }
-    @media (max-width:640px) {
-      nav { padding:0 20px; }
-      .nav-links { display:none; }
-      .stats-strip { grid-template-columns:1fr 1fr; }
-      .stat-item:nth-child(2) { border-right:none; }
-      .stat-item:nth-child(3) { border-top:1px solid var(--border); border-right:1px solid var(--border); }
-      .stat-item:nth-child(4) { border-top:1px solid var(--border); }
-      .features-grid { grid-template-columns:1fr; }
-      .browser-grid { grid-template-columns:1fr; }
-      footer { flex-direction:column; }
-      .footer-right { text-align:left; }
-      .hero { padding:100px 24px 60px; }
+    @media(max-width:640px){
+      nav{padding:0 20px}
+      .nav-links{display:none}
+      .stats-strip{grid-template-columns:1fr 1fr}
+      .stat-item:nth-child(2){border-right:none}
+      .stat-item:nth-child(3){border-top:1px solid var(--border);border-right:1px solid var(--border)}
+      .stat-item:nth-child(4){border-top:1px solid var(--border)}
+      .features-grid{grid-template-columns:1fr}
+      .browser-grid{grid-template-columns:1fr}
+      footer{flex-direction:column}
+      .footer-right{text-align:left}
     }
   </style>
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <a href="#" class="nav-logo">
-      <img src="icon_32.png" alt="icon">
-      <span class="nav-logo-text">Temu Quick Scraper</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#data">Fields</a></li>
-      <li><a href="#install">Install</a></li>
-      <li><a href="https://github.com/Stevegates24/temu_scrapper/archive/refs/heads/main.zip" class="nav-cta">↓ Download</a></li>
-    </ul>
-  </nav>
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <img src="icon_32.png" alt="icon">
+    <span class="nav-logo-text">Temu Quick Scraper</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#settings">Settings</a></li>
+    <li><a href="#data">Fields</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="https://github.com/Stevegates24/Temu-Quick-Scraper/archive/refs/heads/main.zip" class="nav-cta">↓ Download</a></li>
+  </ul>
+</nav>
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-lines">
-      <span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="hero-watermark">T</div>
+
+  <div class="hero-left">
+    <div class="hero-kicker"><div class="kicker-dot"></div>v1.2 — Chrome &amp; Firefox</div>
+    <h1 class="hero-title">Lighter.<br><span class="ul">Faster</span>.<br><em>Smarter.</em></h1>
+    <p class="hero-sub">Click the icon. <strong>Data scraped and copied to clipboard instantly</strong> — persists between sessions so you can paste any time.</p>
+    <div class="hero-buttons">
+      <a href="#install" class="btn-primary">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Install Free
+      </a>
+      <a href="https://github.com/Stevegates24/Temu-Quick-Scraper" class="btn-ghost">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
     </div>
-    <div class="hero-watermark">T</div>
+  </div>
 
-    <div class="hero-left">
-      <div class="hero-kicker">
-        <div class="kicker-dot"></div>
-        v1.1 — Chrome &amp; Firefox
+  <div class="hero-right">
+    <div class="mockup-wrap">
+      <div class="badge-float top"><span>⚡</span><span>Auto-copies in <span class="acc">&lt;2s</span></span></div>
+      <div class="popup-mockup">
+        <div class="pm-hdr">
+          <img src="icon_32.png" alt="icon">
+          <div class="pm-hdr-text"><div class="pm-hdr-title">Temu Scraper</div><div class="pm-hdr-sub">click any field to copy individually</div></div>
+          <span class="pm-hdr-badge">v1.2</span>
+        </div>
+        <div class="pm-status"><div class="pm-dot"></div><span class="pm-stxt">Done — all copied to clipboard</span></div>
+        <div class="pm-fields">
+          <div class="pm-field is-price"><span class="pm-fkey">Price</span><span class="pm-fval">9.57</span></div>
+          <div class="pm-div"></div>
+          <div class="pm-field"><span class="pm-fkey">Brand</span><span class="pm-fval">N/A</span></div>
+          <div class="pm-field"><span class="pm-fkey">Seller</span><span class="pm-fval">Creative Craftsmanship</span></div>
+          <div class="pm-field"><span class="pm-fkey">Shipping</span><span class="pm-fval">May 3–15</span></div>
+          <div class="pm-div"></div>
+          <div class="pm-field"><span class="pm-fkey">ATC URL</span><span class="pm-fval link">temu.com/goods.html?goods_id=…</span></div>
+        </div>
+        <div class="pm-footer">
+          <div class="pm-btn pm-btn-s"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m13 13-2.5-2.5"/></svg>Scrape</div>
+          <div class="pm-btn pm-btn-c"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/></svg>Copy All</div>
+        </div>
       </div>
-      <h1 class="hero-title">
-        Lighter.<br>
-        <span class="ul">Faster</span>.<br>
-        <em>Smarter.</em>
-      </h1>
-      <p class="hero-sub">
-        Click the icon. <strong>Data scraped and copied to clipboard instantly</strong> — persists between sessions so you can paste any time.
-      </p>
-      <div class="hero-buttons">
-        <a href="#install" class="btn-primary">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Install Free
-        </a>
-        <a href="https://github.com/Stevegates24/temu_scrapper" class="btn-ghost">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
-        </a>
+      <div class="badge-float bot"><span>📌</span><span>Data persists between sessions</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-num"><b>5</b></div><div class="stat-label">Fields scraped</div></div>
+  <div class="stat-item"><div class="stat-num"><b>1</b></div><div class="stat-label">Click to copy</div></div>
+  <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Sessions persisted</div></div>
+  <div class="stat-item"><div class="stat-num"><b>2</b></div><div class="stat-label">Browser types supported</div></div>
+</div>
+
+<!-- FEATURES -->
+<div class="section reveal" id="features">
+  <div class="section-tag">Features</div>
+  <h2 class="section-title">Built to move<br>as fast as you do.</h2>
+  <p class="section-body">No buttons to hunt. No popups to dismiss. Open the extension and it's already done.</p>
+  <div class="features-grid">
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">⚡</div><div class="feature-title">Auto-scrapes on open</div><div class="feature-desc">The moment you click the icon scraping begins. By the time you look at it your clipboard is already loaded.</div></div>
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">📌</div><div class="feature-title">Persists between sessions</div><div class="feature-desc">Close the popup, switch tabs, paste in your tool — data is still there when you come back. Clears only on a new product.</div></div>
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">📋</div><div class="feature-title">Clipboard-first output</div><div class="feature-desc">All 5 fields copied as tab-separated text on every scrape. Paste in one shot. Click fields individually for single values.</div></div>
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">⚙️</div><div class="feature-title">Shipping source toggle</div><div class="feature-desc">Choose between instant page-read mode or thorough modal mode for shipping data. Your preference is saved permanently.</div></div>
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">🌍</div><div class="feature-title">All Temu regions</div><div class="feature-desc">Works on .com, .de and every other regional Temu site. Same page structure, same scraper, everywhere.</div></div>
+    <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">🛡️</div><div class="feature-title">Zero data collected</div><div class="feature-desc">Runs entirely in your browser. No servers, no accounts, no analytics. Your research stays yours.</div></div>
+  </div>
+</div>
+
+<!-- INTERACTIVE DEMO -->
+<div class="demo-wrap" id="demo">
+  <div class="demo-inner">
+    <div class="demo-text reveal">
+      <div class="section-tag">Live Demo</div>
+      <h2 class="section-title" style="font-size:clamp(28px,4vw,44px)">See it work<br>step by step.</h2>
+      <p class="section-body" style="max-width:380px">Click each step to walk through exactly what the extension does from open to clipboard.</p>
+
+      <div class="demo-steps-list">
+        <div class="demo-step-item active" data-step="0">
+          <div class="demo-step-num">1</div>
+          <div><div class="demo-step-label">Click the extension icon</div><div class="demo-step-desc">Scraping starts automatically. The status dot turns purple and pulses.</div></div>
+        </div>
+        <div class="demo-step-item" data-step="1">
+          <div class="demo-step-num">2</div>
+          <div><div class="demo-step-label">Fields populate in real time</div><div class="demo-step-desc">Price, brand, seller, shipping and ATC URL appear as they're scraped from the page.</div></div>
+        </div>
+        <div class="demo-step-item" data-step="2">
+          <div class="demo-step-num">3</div>
+          <div><div class="demo-step-label">Auto-copied to clipboard</div><div class="demo-step-desc">All 5 fields are tab-separated and copied instantly. Status turns green.</div></div>
+        </div>
+        <div class="demo-step-item" data-step="3">
+          <div class="demo-step-num">4</div>
+          <div><div class="demo-step-label">Click any field to copy individually</div><div class="demo-step-desc">Reopen the popup any time — data persists. Click a single field to copy just that value.</div></div>
+        </div>
+        <div class="demo-step-item" data-step="4">
+          <div class="demo-step-num">⚙</div>
+          <div><div class="demo-step-label">Change shipping source in settings</div><div class="demo-step-desc">Hit the gear icon to toggle between Page mode (instant) and Modal mode (thorough).</div></div>
+        </div>
       </div>
     </div>
 
-    <div class="hero-right">
-      <div class="mockup-wrap">
-        <div class="badge-float top">
-          <span>⚡</span>
-          <span>Auto-copies in <span class="accent">&lt;2s</span></span>
+    <div class="demo-mockup-wrap reveal">
+      <div class="demo-gear-badge"><span>⚙️</span><span>Settings: <span class="acc">Page mode</span></span></div>
+      <div class="demo-popup">
+        <div class="demo-popup-hdr">
+          <img src="icon_32.png" alt="icon">
+          <span class="demo-popup-title">Temu Scraper</span>
+          <span class="demo-popup-badge">v1.2</span>
         </div>
-        <div class="popup-mockup">
-          <div class="pm-hdr">
-            <img src="icon_32.png" alt="icon">
-            <div class="pm-hdr-text">
-              <div class="pm-hdr-title">Temu Scraper</div>
-              <div class="pm-hdr-sub">click any field to copy individually</div>
-            </div>
-            <span class="pm-hdr-badge">v1.1</span>
-          </div>
-          <div class="pm-status">
-            <div class="pm-status-dot"></div>
-            <span class="pm-status-txt">Done — all copied to clipboard</span>
-          </div>
-          <div class="pm-fields">
-            <div class="pm-field is-price">
-              <span class="pm-fkey">Price</span>
-              <span class="pm-fval">9.57</span>
-            </div>
-            <div class="pm-div"></div>
-            <div class="pm-field"><span class="pm-fkey">Brand</span><span class="pm-fval">N/A</span></div>
-            <div class="pm-field"><span class="pm-fkey">Seller</span><span class="pm-fval">Creative Craftsmanship</span></div>
-            <div class="pm-field"><span class="pm-fkey">Shipping</span><span class="pm-fval">1–7 business days</span></div>
-            <div class="pm-div"></div>
-            <div class="pm-field"><span class="pm-fkey">ATC URL</span><span class="pm-fval link">temu.com/goods.html?goods_id=…</span></div>
-          </div>
-          <div class="pm-footer">
-            <div class="pm-btn pm-btn-s">
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m13 13-2.5-2.5"/></svg>
-              Scrape
-            </div>
-            <div class="pm-btn pm-btn-c">
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/></svg>
-              Copy All
-            </div>
+        <!-- settings panel (hidden by default) -->
+        <div class="demo-settings" id="demoSettings">
+          <div class="demo-mode-label">Shipping source</div>
+          <div class="demo-mode-grid">
+            <div class="demo-mode-btn active" id="demoModePage">⚡ Page<span class="demo-mode-sub">instant · no click</span></div>
+            <div class="demo-mode-btn" id="demoModeModal">🔍 Modal<span class="demo-mode-sub">thorough · opens popup</span></div>
           </div>
         </div>
-        <div class="badge-float bot">
-          <span>📌</span>
-          <span>Data persists between sessions</span>
+        <div class="demo-status">
+          <div class="demo-sdot" id="demoDot"></div>
+          <span class="demo-stxt" id="demoTxt">Ready — click icon to scrape</span>
+        </div>
+        <div class="demo-fields-area">
+          <div class="demo-field is-price" id="df-price"><span class="demo-fkey">Price</span><span class="demo-fval empty" id="dfv-price">—</span></div>
+          <div class="demo-div"></div>
+          <div class="demo-field" id="df-brand"><span class="demo-fkey">Brand</span><span class="demo-fval empty" id="dfv-brand">—</span></div>
+          <div class="demo-field" id="df-seller"><span class="demo-fkey">Seller</span><span class="demo-fval empty" id="dfv-seller">—</span></div>
+          <div class="demo-field" id="df-shipping"><span class="demo-fkey">Shipping</span><span class="demo-fval empty" id="dfv-shipping">—</span></div>
+          <div class="demo-div"></div>
+          <div class="demo-field" id="df-atc"><span class="demo-fkey">ATC URL</span><span class="demo-fval empty link" id="dfv-atc">—</span></div>
+        </div>
+        <div class="demo-popup-footer">
+          <div class="demo-pbtn scrape" id="demoScrapeBtn">
+            <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m13 13-2.5-2.5"/></svg>
+            Scrape
+          </div>
+          <div class="demo-pbtn copy">
+            <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10 5.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5"/></svg>
+            Copy All
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- STATS -->
-  <div class="stats-strip">
-    <div class="stat-item"><div class="stat-num"><b>5</b></div><div class="stat-label">Fields scraped</div></div>
-    <div class="stat-item"><div class="stat-num"><b>0</b></div><div class="stat-label">Clicks to copy</div></div>
-    <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Sessions persisted</div></div>
-    <div class="stat-item"><div class="stat-num"><b>2</b></div><div class="stat-label">Browsers supported</div></div>
-  </div>
-
-  <!-- FEATURES -->
-  <div class="section reveal" id="features">
-    <div class="section-tag">Features</div>
-    <h2 class="section-title">Built to move<br>as fast as you do.</h2>
-    <p class="section-body">No buttons to hunt. No popups to dismiss. Open the extension and it's already done.</p>
-    <div class="features-grid">
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">⚡</div><div class="feature-title">Auto-scrapes on open</div><div class="feature-desc">The moment you click the icon, scraping begins. By the time you look at it, your clipboard is already loaded.</div></div>
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">📌</div><div class="feature-title">Persists between sessions</div><div class="feature-desc">Close the popup, switch tabs, paste in your tool — data is still there when you come back. Clears only on a new product.</div></div>
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">📋</div><div class="feature-title">Clipboard-first output</div><div class="feature-desc">All 5 fields copied as tab-separated text on every scrape. Paste in one shot. Click fields individually for single values.</div></div>
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">🔗</div><div class="feature-title">Clean ATC URL</div><div class="feature-desc">Builds the Add-to-Cart URL with goods_id and sku_id from the page — no cart, no address bar fumbling.</div></div>
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">🌍</div><div class="feature-title">All Temu regions</div><div class="feature-desc">Works on .com, .de and every other regional Temu site. Same page structure, same scraper, everywhere.</div></div>
-      <div class="feature-card"><div class="fc-bar"></div><div class="feature-icon">🛡️</div><div class="feature-title">Zero data collected</div><div class="feature-desc">Runs entirely in your browser. No servers, no accounts, no analytics. Your research stays yours.</div></div>
-    </div>
-  </div>
-
-  <!-- HOW IT WORKS -->
-  <div class="how-wrap" id="how">
-    <div class="how-inner">
-      <div class="reveal">
-        <div class="section-tag">How it works</div>
-        <h2 class="section-title">Three steps.<br>That's it.</h2>
+<!-- SETTINGS SECTION -->
+<div class="section settings-section reveal" id="settings">
+  <div class="section-tag">Settings</div>
+  <h2 class="section-title">Two shipping<br>modes. You choose.</h2>
+  <p class="section-body">Click the ⚙️ gear icon inside the popup to switch modes. Your choice is saved and remembered every session.</p>
+  <div class="settings-grid">
+    <div class="setting-card">
+      <div class="setting-card-badge fast">⚡ Default</div>
+      <div class="setting-card-title">Page Mode</div>
+      <div class="setting-card-desc">Reads the delivery text already rendered on the Temu product page — no clicks, no waiting for popups. Works for both standard and local warehouse products. This is the recommended mode for most users.</div>
+      <div class="setting-card-meta">
+        <div class="setting-meta-row"><span class="dot pu"></span><strong>Instant</strong> — no extra clicks or delays</div>
+        <div class="setting-meta-row"><span class="dot pu"></span>Works for <strong>local warehouse</strong> and standard items</div>
+        <div class="setting-meta-row"><span class="dot pu"></span>Reads <strong>Delivery: May 3–15</strong> or <strong>Fastest delivery in 3 days</strong></div>
+        <div class="setting-meta-row"><span class="dot pu"></span>Scoped to the shipping section below the ATC button</div>
       </div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div>
-            <div class="step-title">Install the extension</div>
-            <div class="step-desc">Download the zip, unzip it, open your browser's extension page and load unpacked. Under 60 seconds, start to finish.</div>
-            <div class="step-code">chrome://extensions → Load unpacked</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div>
-            <div class="step-title">Open any Temu product page</div>
-            <div class="step-desc">Navigate to a product on temu.com, let the page load, then click the extension icon in your toolbar.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div>
-            <div class="step-title">Paste — you're done</div>
-            <div class="step-desc">All 5 fields are already in your clipboard. Click into your tool and paste. Or open the popup to copy one field at a time.</div>
-            <div class="step-code">Ctrl+V → 5 fields, instantly</div>
-          </div>
-        </div>
+    </div>
+    <div class="setting-card">
+      <div class="setting-card-badge modal">🔍 Thorough</div>
+      <div class="setting-card-title">Modal Mode</div>
+      <div class="setting-card-desc">Clicks the "Ships from this seller ›" or "Free shipping for this item ›" row to open the shipping panel, reads the delivery table inside, then closes it automatically. More reliable on pages where text isn't visible without interaction.</div>
+      <div class="setting-card-meta">
+        <div class="setting-meta-row"><span class="dot gr"></span>Reads the <strong>shipping popup table</strong> directly</div>
+        <div class="setting-meta-row"><span class="dot gr"></span>Handles <strong>standard and local warehouse</strong> modal formats</div>
+        <div class="setting-meta-row"><span class="dot gr"></span>Only opens the <strong>correct panel</strong> — never the nav banner</div>
+        <div class="setting-meta-row"><span class="dot gr"></span>Slightly slower (~1.5s) but most thorough</div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- DATA FIELDS -->
-  <div class="section reveal" id="data">
-    <div class="section-tag">Data Fields</div>
-    <h2 class="section-title">Five fields.<br>Auto-copied.</h2>
-    <p class="section-body">Every scrape extracts all five and puts them in your clipboard — tab-separated, ready to paste.</p>
-    <div class="fields-grid">
-      <div class="field-card"><div class="field-card-icon">💰</div><div class="field-card-name">Price</div><div class="field-card-eg">→ <span>9.57</span> (no symbol)</div></div>
-      <div class="field-card"><div class="field-card-icon">🏷️</div><div class="field-card-name">Brand</div><div class="field-card-eg">→ <span>BHGOCA</span> or N/A</div></div>
-      <div class="field-card"><div class="field-card-icon">🏪</div><div class="field-card-name">Seller</div><div class="field-card-eg">→ <span>Creative Craftsmanship</span></div></div>
-      <div class="field-card"><div class="field-card-icon">🚚</div><div class="field-card-name">Shipping</div><div class="field-card-eg">→ <span>1–7 business days</span></div></div>
-      <div class="field-card"><div class="field-card-icon">🔗</div><div class="field-card-name">ATC URL</div><div class="field-card-eg">→ <span>temu.com/goods.html?…</span></div></div>
+<!-- HOW IT WORKS -->
+<div class="how-wrap" id="how">
+  <div class="how-inner">
+    <div class="reveal">
+      <div class="section-tag">How it works</div>
+      <h2 class="section-title">Three steps.<br>That's it.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div><div class="step-title">Install the extension</div><div class="step-desc">Download the zip, unzip it, open your browser's extension page and load unpacked. Under 60 seconds, start to finish.</div><div class="step-code">chrome://extensions → Load unpacked</div></div></div>
+      <div class="step"><div class="step-num">2</div><div><div class="step-title">Open any Temu product page</div><div class="step-desc">Navigate to a product on temu.com, let the page load, then click the extension icon in your toolbar.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Paste — you're done</div><div class="step-desc">All 5 fields are already in your clipboard. Click into your tool and paste. Or reopen the popup to copy one field at a time.</div><div class="step-code">Ctrl+V → 5 fields, instantly</div></div></div>
     </div>
   </div>
+</div>
 
-  <!-- INSTALL -->
-  <div class="install-wrap" id="install">
-    <div class="install-inner">
-      <div class="reveal">
-        <div class="section-tag">Install</div>
-        <h2 class="section-title">Pick your browser.</h2>
-        <p class="section-body">Available on Chrome and Firefox — same extension, both supported.</p>
-      </div>
-      <div class="browser-grid reveal">
-        <a href="https://github.com/Stevegates24/temu_scrapper/archive/refs/heads/main.zip" class="browser-card">
-          <div class="browser-emoji">🌐</div>
-          <div class="browser-name">Google Chrome</div>
-          <div class="browser-desc">Download the zip and load unpacked via <code>chrome://extensions</code>. Developer mode, one click.</div>
-          <div class="browser-arrow">→</div>
-        </a>
-        <a href="https://addons.mozilla.org/en-US/firefox/addon/temu-quick-scraper/" class="browser-card">
-          <div class="browser-emoji">🦊</div>
-          <div class="browser-name">Firefox</div>
-          <div class="browser-desc">Install directly from Firefox Add-ons in one click — no developer mode needed.</div>
-          <div class="browser-arrow">→</div>
-        </a>
-      </div>
-      <div class="manual-box reveal">
-        <h3>Manual install (Chrome developer mode)</h3>
-        <ol>
-          <li>Download the <code>.zip</code> from GitHub and unzip it</li>
-          <li>Go to <code>chrome://extensions</code> and enable <strong>Developer Mode</strong></li>
-          <li>Click <strong>Load unpacked</strong> and select the unzipped folder</li>
-          <li>Open any Temu product page and click the extension icon</li>
-        </ol>
-      </div>
+<!-- DATA FIELDS -->
+<div class="section reveal" id="data">
+  <div class="section-tag">Data Fields</div>
+  <h2 class="section-title">Five fields.<br>Auto-copied.</h2>
+  <p class="section-body">Every scrape extracts all five and puts them in your clipboard — tab-separated, ready to paste.</p>
+  <div class="fields-grid">
+    <div class="field-card"><div class="field-card-icon">💰</div><div class="field-card-name">Price</div><div class="field-card-eg">→ <span>9.57</span> (no symbol)</div></div>
+    <div class="field-card"><div class="field-card-icon">🏷️</div><div class="field-card-name">Brand</div><div class="field-card-eg">→ <span>BHGOCA</span> or N/A</div></div>
+    <div class="field-card"><div class="field-card-icon">🏪</div><div class="field-card-name">Seller</div><div class="field-card-eg">→ <span>Creative Craftsmanship</span></div></div>
+    <div class="field-card"><div class="field-card-icon">🚚</div><div class="field-card-name">Shipping</div><div class="field-card-eg">→ <span>May 3–15</span> or <span>Fastest delivery in 3 days</span></div></div>
+    <div class="field-card"><div class="field-card-icon">🔗</div><div class="field-card-name">ATC URL</div><div class="field-card-eg">→ <span>temu.com/goods.html?…</span></div></div>
+  </div>
+</div>
+
+<!-- INSTALL -->
+<div class="install-wrap" id="install">
+  <div class="install-inner">
+    <div class="reveal">
+      <div class="section-tag">Install</div>
+      <h2 class="section-title">Pick your browser.</h2>
+      <p class="section-body">Available on Chrome and Firefox — same extension, both supported.</p>
+    </div>
+    <div class="browser-grid reveal">
+      <a href="https://github.com/Stevegates24/Temu-Quick-Scraper/archive/refs/heads/main.zip" class="browser-card">
+        <div class="browser-emoji">🌐</div>
+        <div class="browser-name">Google Chrome</div>
+        <div class="browser-desc">Download the zip and load unpacked via <code>chrome://extensions</code>. Developer mode, one click.</div>
+        <div class="browser-arrow">→</div>
+      </a>
+      <a href="https://addons.mozilla.org/en-US/firefox/addon/temu-quick-scraper/" class="browser-card">
+        <div class="browser-emoji">🦊</div>
+        <div class="browser-name">Firefox</div>
+        <div class="browser-desc">Install directly from Firefox Add-ons in one click — no developer mode needed.</div>
+        <div class="browser-arrow">→</div>
+      </a>
+    </div>
+    <div class="manual-box reveal">
+      <h3>Manual install (Chrome developer mode)</h3>
+      <ol>
+        <li>Download the <code>.zip</code> from GitHub and unzip it</li>
+        <li>Go to <code>chrome://extensions</code> and enable <strong>Developer Mode</strong></li>
+        <li>Click <strong>Load unpacked</strong> and select the unzipped folder</li>
+        <li>Open any Temu product page and click the extension icon</li>
+      </ol>
     </div>
   </div>
+</div>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-left">
-      <img src="icon_32.png" alt="icon">
-      <div>
-        <div class="footer-logo">Temu <span>Quick Scraper</span></div>
-        <div class="footer-byline">Built by Steve Gates · v1.1</div>
-      </div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <img src="icon_32.png" alt="icon">
+    <div>
+      <div class="footer-logo">Temu <span>Quick Scraper</span></div>
+      <div class="footer-byline">Built by Steve Gates · v1.2</div>
     </div>
-    <div class="footer-right">
-      <a href="https://github.com/Stevegates24/temu_scrapper">GitHub →</a>
-      <p>Not affiliated with Temu or Whaleco Inc.</p>
-    </div>
-  </footer>
+  </div>
+  <div class="footer-right">
+    <a href="https://github.com/Stevegates24/temu_scrapper">GitHub →</a>
+    <p>Not affiliated with Temu or Whaleco Inc.</p>
+  </div>
+</footer>
 
-  <script>
-    // Reveal on scroll
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
-      });
-    }, { threshold: 0.08 });
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+<script>
+// ── Reveal on scroll ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-    // Staggered steps
-    const stepObs = new IntersectionObserver(entries => {
-      entries.forEach((e, i) => {
-        if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('visible'), i * 140);
-          stepObs.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.06 });
-    document.querySelectorAll('.step').forEach(el => stepObs.observe(el));
+const stepObs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => { if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), i * 140); stepObs.unobserve(e.target); } });
+}, { threshold: 0.06 });
+document.querySelectorAll('.step').forEach(el => stepObs.observe(el));
 
-    // Nav background intensifies on scroll
-    const nav = document.querySelector('nav');
-    window.addEventListener('scroll', () => {
-      nav.style.background = window.scrollY > 20
-        ? 'rgba(8,9,12,0.97)'
-        : 'rgba(8,9,12,0.80)';
-    }, { passive: true });
-  </script>
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').style.background =
+    window.scrollY > 20 ? 'rgba(7,8,13,0.97)' : 'rgba(7,8,13,0.82)';
+}, { passive: true });
+
+// ── Interactive Demo ──
+const DEMO_DATA = {
+  price: '9.57', brand: 'N/A',
+  seller: 'Creative Craftsmanship',
+  shipping: 'May 3–15',
+  atc: 'temu.com/goods.html?goods_id=606304…'
+};
+
+let demoRunning = false;
+
+function setDemoField(id, val, isEmpty) {
+  const el = document.getElementById('dfv-' + id);
+  if (!el) return;
+  el.textContent = isEmpty ? '—' : val;
+  el.className = 'demo-fval' + (isEmpty ? ' empty' : '') + (id === 'atc' ? ' link' : '');
+}
+
+function resetDemo() {
+  ['price','brand','seller','shipping','atc'].forEach(id => setDemoField(id, '', true));
+  const dot = document.getElementById('demoDot');
+  const txt = document.getElementById('demoTxt');
+  dot.className = 'demo-sdot';
+  dot.style.background = '';
+  txt.textContent = 'Ready — click Scrape to start';
+  txt.className = 'demo-stxt';
+  document.getElementById('demoSettings').classList.remove('open');
+}
+
+async function runDemo() {
+  if (demoRunning) return;
+  demoRunning = true;
+  resetDemo();
+
+  const dot = document.getElementById('demoDot');
+  const txt = document.getElementById('demoTxt');
+
+  await new Promise(r => setTimeout(r, 300));
+
+  // Step 1 — loading
+  dot.className = 'demo-sdot loading';
+  txt.textContent = 'Scraping page…';
+  txt.className = 'demo-stxt';
+
+  const fields = ['price','brand','seller','shipping','atc'];
+  const delays = [600, 950, 1200, 1500, 1800];
+
+  for (let i = 0; i < fields.length; i++) {
+    await new Promise(r => setTimeout(r, delays[i]));
+    setDemoField(fields[i], DEMO_DATA[fields[i]], false);
+    // flash the field
+    const card = document.getElementById('df-' + fields[i]);
+    if (card) {
+      card.classList.add('flash');
+      setTimeout(() => card.classList.remove('flash'), 500);
+    }
+  }
+
+  await new Promise(r => setTimeout(r, 400));
+  dot.className = 'demo-sdot ok';
+  txt.textContent = 'Done — all copied to clipboard';
+  txt.className = 'demo-stxt ok';
+  demoRunning = false;
+}
+
+document.getElementById('demoScrapeBtn').addEventListener('click', runDemo);
+
+// ── Demo step walkthroughs ──
+const stepActions = [
+  () => { resetDemo(); },
+  () => {
+    const dot = document.getElementById('demoDot');
+    const txt = document.getElementById('demoTxt');
+    dot.className = 'demo-sdot loading';
+    txt.textContent = 'Scraping page…';
+    ['price','brand','seller','shipping','atc'].forEach(id => {
+      setTimeout(() => setDemoField(id, DEMO_DATA[id], false), Math.random()*600+200);
+    });
+  },
+  () => {
+    ['price','brand','seller','shipping','atc'].forEach(id => setDemoField(id, DEMO_DATA[id], false));
+    const dot = document.getElementById('demoDot');
+    const txt = document.getElementById('demoTxt');
+    dot.className = 'demo-sdot ok';
+    txt.textContent = 'Done — all copied to clipboard';
+    txt.className = 'demo-stxt ok';
+  },
+  () => {
+    ['price','brand','seller','shipping','atc'].forEach(id => setDemoField(id, DEMO_DATA[id], false));
+    const card = document.getElementById('df-price');
+    if (card) { card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 800); }
+    const dot = document.getElementById('demoDot');
+    dot.className = 'demo-sdot ok';
+    document.getElementById('demoTxt').textContent = 'Loaded — click to copy or re-scrape';
+    document.getElementById('demoTxt').className = 'demo-stxt ok';
+  },
+  () => {
+    document.getElementById('demoSettings').classList.add('open');
+    document.getElementById('demoTxt').textContent = 'Settings open — choose shipping source';
+    document.getElementById('demoTxt').className = 'demo-stxt';
+  },
+];
+
+document.querySelectorAll('.demo-step-item').forEach((item, i) => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.demo-step-item').forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    stepActions[i]?.();
+  });
+});
+
+// Settings demo toggle
+document.getElementById('demoModePage').addEventListener('click', () => {
+  document.getElementById('demoModePage').classList.add('active');
+  document.getElementById('demoModeModal').classList.remove('active');
+  document.querySelector('.demo-gear-badge .acc').textContent = 'Page mode';
+});
+document.getElementById('demoModeModal').addEventListener('click', () => {
+  document.getElementById('demoModeModal').classList.add('active');
+  document.getElementById('demoModePage').classList.remove('active');
+  document.querySelector('.demo-gear-badge .acc').textContent = 'Modal mode';
+});
+</script>
 </body>
 </html>
