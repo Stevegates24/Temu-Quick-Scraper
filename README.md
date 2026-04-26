@@ -21,7 +21,7 @@ Extract price, brand, seller, shipping info, and ATC URL from any Temu product p
 ## 📥 Installation
 
 ### Chrome / Edge
-1. [Download the ZIP](https://github.com/Stevegates24/temu_scrapper/archive/refs/heads/main.zip) and extract it
+1. [Download the ZIP](https://github.com/Stevegates24/Temu-Quick-Scraper/archive/refs/heads/main.zip) and extract it
 2. Open `chrome://extensions/`
 3. Enable **Developer Mode** (toggle, top right)
 4. Click **Load Unpacked**
