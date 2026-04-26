@@ -1,57 +1,69 @@
 # ⚡ Temu Quick Scraper
 
-[TEMU QUICK SCRAPER](https://stevegates24.github.io/Temu-Quick-Scraper/)
+**[→ Visit the extension page](https://stevegates24.github.io/Temu-Quick-Scraper/)**
 
-Extract price, brand, seller, shipping info, and ATC URL from any Temu product page.  
-Data **persists between sessions** — close the popup, go paste in your tool, come back and the data is still there.
+Extract price, brand, seller, shipping info, and ATC URL from any Temu product page — auto-copied to clipboard the moment scraping finishes. Data **persists between sessions** so you can close the popup, paste in your tool, and come back whenever.
 
 ---
 
 ## ✨ What it scrapes
 
-| Field    | Example                        |
-|----------|--------------------------------|
-| Price    | `6.61` (number only, no symbol)|
-| Brand    | `Mia Rug` (or `N/A`)          |
-| Seller   | `Mia Rug Store`                |
-| Shipping | `4-8 business days`            |
-| ATC URL  | `https://www.temu.com/goods.html?...` |
+| Field    | Example |
+|----------|---------|
+| Price    | `6.61` (number only, no currency symbol) |
+| Brand    | `Mia Rug` (or `N/A` if not listed) |
+| Seller   | `Mia Rug Store` |
+| Shipping | `May 3-15` or `Fastest delivery in 3 days` |
+| ATC URL  | `https://www.temu.com/goods.html?goods_id=...` |
 
 ---
 
 ## 📥 Installation
 
 ### Chrome / Edge
-1. Download and extract the ZIP
+1. [Download the ZIP](https://github.com/Stevegates24/temu_scrapper/archive/refs/heads/main.zip) and extract it
 2. Open `chrome://extensions/`
-3. Enable **Developer Mode** (top right)
+3. Enable **Developer Mode** (toggle, top right)
 4. Click **Load Unpacked**
 5. Select the extracted folder
 
 ### Firefox
-1. Open `about:debugging#/runtime/this-firefox`
-2. Click **Load Temporary Add-on**
-3. Select `manifest.json` from the extracted folder
+Install directly from the Firefox Add-ons store — no developer mode needed:
 
-> **Note:** You need to supply your own icon files named `icon_16.png`, `icon_32.png`, `icon_48.png`, `icon_128.png` in the folder. You can reuse the `premium_icon_*.png` files from the original scraper — just rename them.
+**[→ Install on Firefox](https://addons.mozilla.org/en-US/firefox/addon/temu-quick-scraper/)**
 
 ---
 
 ## ⚡ Usage
 
-1. Open any Temu product page
-2. Click the extension icon — it **auto-scrapes** immediately
-3. Click any field to copy that value individually
-4. Or click **Copy All** to copy all fields tab-separated (paste into Excel/Sheets)
+1. Open any Temu product page and let it fully load
+2. Click the extension icon — scraping starts **automatically**
+3. All 5 fields are **copied to your clipboard** as tab-separated text instantly
+4. Paste into your spreadsheet or tool in one shot (`Ctrl+V`)
+5. Or reopen the popup and click any individual field to copy just that value
+
+### Shipping source setting
+Click the **⚙️ gear icon** in the popup to choose how shipping is scraped:
+
+| Mode | Speed | How it works |
+|------|-------|--------------|
+| **⚡ Page** (default) | Instant | Reads delivery text already visible on the page — no clicks |
+| **🔍 Modal** | ~1.5s | Opens the shipping panel, reads the delivery table — more thorough |
+
+Your choice is saved and persists between sessions.
 
 ### Persistence behaviour
-- **Same product:** reopen popup → last scraped data is shown instantly, no re-scrape needed
-- **New product:** popup detects a different product URL and auto-scrapes automatically
-- **Non-Temu page:** popup shows last scraped data so you can still copy fields while working in your tool
+- **Same product:** reopen popup → last scraped data loads instantly, no re-scrape needed
+- **New product:** popup detects a different product and auto-scrapes automatically
+- **Non-Temu page:** last scraped data is still shown so you can keep copying fields while working in your tool
 
 ---
 
 ## 🔒 Privacy
 
-All processing happens locally in your browser.  
-No data is sent anywhere.
+Everything runs locally in your browser.  
+No data is collected, stored externally, or sent anywhere.
+
+---
+
+*Built by Steve Gates · v1.2 · Not affiliated with Temu or Whaleco Inc.*
