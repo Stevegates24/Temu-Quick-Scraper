@@ -1,11 +1,13 @@
-// content.js — Temu Quick Scraper v1.1
+// content.js — Temu Quick Scraper v1.2
 
 (function () {
-  if (window.__temuQuickScraperInjected) return;
-  window.__temuQuickScraperInjected = true;
+  // Guard: only register listener once per page load.
+  // Do NOT reset this flag — resetting it caused the listener to be lost.
+  if (window.__temuQuickScraperReady) return;
+  window.__temuQuickScraperReady = true;
 
-  const BIZ_RANGE_PATTERN  = /(\d+)\s*[-–]\s*(\d+)\s*business\s*days?/i;
-  const BIZ_SINGLE_PATTERN = /(\d+)\s*business\s*days?/i;
+  const BIZ_RANGE_PATTERN = /(\d+)\s*[-–]\s*(\d+)\s*(?:business\s*)?days?/i;
+  const BIZ_SINGLE_PATTERN = /(\d+)\s*(?:business\s*)?days?/i;
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -50,7 +52,6 @@
       const p = extractPriceFromDiv(salePriceDiv);
       if (p) return p;
     }
-
     const goodsPriceEl =
       document.querySelector('#goods_price') ||
       document.querySelector('[class*="goods_price"]') ||
@@ -76,7 +77,6 @@
       }
       if (smallestStr) return smallestStr;
     }
-
     for (const container of document.querySelectorAll('[class*="PjdWJn3s"]')) {
       const hasStrike = Array.from(container.querySelectorAll("span")).some(s =>
         /line-through/i.test(s.getAttribute("style") || "")
@@ -85,7 +85,6 @@
       const p = extractPriceFromDiv(container);
       if (p) return p;
     }
-
     return "";
   }
 
@@ -151,7 +150,6 @@
       const inner = storeLink.querySelector("div, span");
       if (inner) return inner.innerText?.trim().split("\n")[0] || "";
     }
-
     const brandStoreSpan = document.querySelector('[class*="_3nBusaAC"]');
     if (brandStoreSpan) {
       const t = brandStoreSpan.innerText?.trim();
@@ -161,7 +159,6 @@
         return t.split("·")[0].replace(/Brand Official Store\s*[:\-]?/i, "").trim();
       }
     }
-
     const brandBanner = Array.from(document.querySelectorAll("div, span")).find(el => {
       const t = el.innerText?.trim();
       return t && /Brand Official Store/i.test(t) && t.length < 200;
@@ -171,7 +168,6 @@
       const m = t.match(/Brand Official Store\s*[:\-·]\s*([A-Za-z0-9 &'._-]{2,50})/i);
       if (m) return m[1].trim().split("·")[0].trim();
     }
-
     const soldByEl = Array.from(document.querySelectorAll("div, span")).find(el => {
       const t = el.innerText?.trim();
       return t && /^Sold by/i.test(t) && t.length < 200;
@@ -183,7 +179,6 @@
           return t.split("\n")[0].trim();
       }
     }
-
     const sellerDiv = Array.from(document.querySelectorAll("div, span")).find(el => {
       const t = el.innerText?.trim();
       return t && /followers/i.test(t) && /sold/i.test(t) && t.length < 300;
@@ -195,175 +190,230 @@
           return t;
       }
     }
-
     return "";
   }
 
-  // ── SHIPPING ─────────────────────────────────────────────────
-  // Extract ONLY from the modal shipping table — the most reliable source.
-  // The table row is: Delivery time | 4-8 business days
-  // We do NOT fall back to page text to avoid grabbing "Fastest delivery: N days"
-  // banners which are misleading / duplicate / wrong.
+  // ── SHIPPING — MODE A: PAGE (fast, no click) ─────────────────
+  function scrapeShippingFromPage() {
+    // The shipping section is always inside div.NJajLuUA on product pages
+    const root = document.querySelector('[class*="NJajLuUA"]') || document.body;
 
-  function isNavigationAnchor(el) {
-    let node = el;
-    while (node && node !== document.body) {
-      const tag  = node.tagName?.toLowerCase();
-      const href = node.getAttribute?.("href") || "";
-      if (tag === "a" && href && !href.startsWith("#") && href !== "javascript:void(0)") return true;
-      node = node.parentElement;
-    }
-    return false;
-  }
-
-  // Extract delivery text ONLY from the modal's shipping table
-  // Returns e.g. "4-8 business days" or "1-7 business days"
-  function extractShippingFromModal(modal) {
-    if (!modal) return "";
-
-    // Priority 1: table row with "Delivery time" label
-    for (const row of modal.querySelectorAll("tr")) {
-      const cells = Array.from(row.querySelectorAll("td"));
-      for (let i = 0; i < cells.length; i++) {
-        const label = cells[i]?.innerText?.trim();
-        if (/delivery\s*time/i.test(label)) {
-          // Value is in an aria-label span inside the next cell
-          const nextCell = cells[i + 1];
-          if (nextCell) {
-            // Try aria-label span first (most reliable)
-            const ariaSpan = nextCell.querySelector("span[aria-label]");
-            if (ariaSpan) {
-              const val = ariaSpan.getAttribute("aria-label")?.trim();
-              if (val && val.length < 60) return val;
-            }
-            // Fallback: innerText of the cell
-            const val = nextCell.innerText?.trim().split("\n")[0].trim();
-            if (val && val.length < 60) return val;
-          }
-        }
-      }
-    }
-
-    // Priority 2: any span with aria-label containing business days range
-    for (const span of modal.querySelectorAll("span[aria-label]")) {
-      const val = span.getAttribute("aria-label")?.trim();
-      if (val && BIZ_RANGE_PATTERN.test(val) && val.length < 60) return val;
-    }
-
-    // Priority 3: any td/span containing a business days range (not histogram)
-    for (const el of modal.querySelectorAll("td, span")) {
+    // Strategy 1: "Delivery: <date range>" — e.g. "Delivery: May 3-15"
+    for (const el of root.querySelectorAll("span, div, p")) {
+      if (el.children.length > 4) continue;
       const t = el.innerText?.trim();
-      if (!t || t.length > 60) continue;
-      // Skip histogram labels like "≤4 business days", ">8 business days"
-      if (/^[≤<>]/.test(t)) continue;
-      // Skip "Fastest delivery in N business days" — that's a banner, not the range
-      if (/fastest/i.test(t)) continue;
-      if (BIZ_RANGE_PATTERN.test(t)) return t;
+      if (!t || t.length > 400) continue;
+      // Match "Delivery: May 3-15" or "Delivery: Apr 29-May 6"
+      const m = t.match(/Delivery\s*:\s*([A-Za-z]+\s+\d{1,2}[-–][A-Za-z]*\s*\d{0,2})/i);
+      if (m) return m[1].trim();
     }
 
-    // Priority 4: single business days only if it's a clean "N business days" from a td
-    for (const td of modal.querySelectorAll("td")) {
-      const t = td.innerText?.trim();
-      if (!t || t.length > 60) continue;
-      if (/^[≤<>]/.test(t) || /fastest/i.test(t)) continue;
-      if (BIZ_SINGLE_PATTERN.test(t)) return t;
-    }
-
-    return "";
-  }
-
-  async function scrapeShipping() {
-    // Always open the shipping modal — never rely on page text
-    // because page banners show "Fastest delivery: N days" which is misleading
-
-    const candidates = [
-      document.querySelector('[aria-label*="Ships from this seller"]'),
-      document.querySelector('[aria-label*="ships from"]'),
-      document.querySelector('[class*="_15GwfeZv"]'),
-      // Free shipping row / shipping section clickable button
-      ...Array.from(document.querySelectorAll('[role="button"]')).filter(el => {
-        const text = (el.innerText?.trim() || "") + (el.getAttribute("aria-label") || "");
-        const tag  = el.tagName?.toLowerCase();
-        return /ships from|free shipping|standard.*delivery|delivery.*standard/i.test(text) &&
-               text.length < 400 &&
-               (tag === "div" || tag === "span") &&
-               !isNavigationAnchor(el);
-      }),
-      // Delivery time row
-      ...Array.from(document.querySelectorAll('[role="button"]')).filter(el => {
-        const text = el.innerText?.trim() || "";
-        return /business\s*days?|delivery\s*time/i.test(text) &&
-               text.length < 200 && !isNavigationAnchor(el);
-      }),
-      // The "> Free shipping" link/button at top of product page
-      ...Array.from(document.querySelectorAll("div, span, a")).filter(el => {
-        const t = el.innerText?.trim();
-        const tag = el.tagName?.toLowerCase();
-        return t && /^free\s*shipping$/i.test(t) &&
-               (tag === "div" || tag === "span" || tag === "a") &&
-               el.style?.cursor === "pointer" || el.getAttribute("role") === "button";
-      }),
-    ].filter(Boolean);
-
-    const seen = new Set();
-    const triggers = candidates.filter(el => {
-      if (seen.has(el)) return false;
-      seen.add(el); return true;
-    });
-
-    for (const trigger of triggers) {
-      try {
-        trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-        await sleep(1800);
-
-        // Find the opened modal
-        const modal =
-          document.querySelector('[role="dialog"]') ||
-          Array.from(document.querySelectorAll("div")).find(el => {
-            const cls = typeof el.className === "string" ? el.className : "";
-            return /modal|Modal|dialog|Dialog/i.test(cls) &&
-                   el.offsetParent !== null &&
-                   (el.querySelector("td") || el.querySelector('[class*="PjdWJn3s"]'));
-          });
-
-        if (modal) {
-          const result = extractShippingFromModal(modal);
-
-          // Close modal
-          const closeBtn =
-            modal.querySelector('[aria-label="Close"]') ||
-            modal.querySelector('[aria-label="close"]') ||
-            document.querySelector('[aria-label="Close"]') ||
-            document.querySelector('[class*="_1SgweZv"]') ||
-            document.querySelector('[data-ignore-height="true"][role="button"]');
-          if (closeBtn) closeBtn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-          else document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-          await sleep(400);
-
-          if (result) return result;
-        }
-      } catch (e) {}
-    }
-
-    // Last resort: try reading delivery text from the page's shipping section
-    // but ONLY a range (e.g. "1-7 business days"), never "Fastest delivery" text
-    for (const el of document.querySelectorAll("span, div")) {
-      const t = el.innerText?.trim();
-      if (!t || t.length > 60 || /^[≤<>]/.test(t) || /fastest/i.test(t)) continue;
-      if (BIZ_RANGE_PATTERN.test(t)) return t;
-    }
-
-    // Check the "Standard: FREE. Delivery: May 1-8" text visible on page
-    for (const el of document.querySelectorAll("span, div, p")) {
+    // Strategy 2: "Fastest delivery in N days" (local warehouse)
+    for (const el of root.querySelectorAll("span, div, p")) {
+      if (el.children.length > 3) continue;
       const t = el.innerText?.trim();
       if (!t || t.length > 200) continue;
-      if (/delivery\s*:/i.test(t)) {
-        const part = t.replace(/^.*delivery\s*:\s*/i, "").split("|")[0].trim();
-        if (part && part.length < 60 && !/fastest/i.test(part)) return part;
+      const m = t.match(/fastest\s*delivery\s*in\s*(\d+\s*(?:business\s*)?days?)/i);
+      if (m) return "Fastest delivery in " + m[1];
+    }
+
+    // Strategy 3: plain "Delivery: <text>" without date pattern
+    for (const el of root.querySelectorAll("span, div, p")) {
+      if (el.children.length > 4) continue;
+      const t = el.innerText?.trim();
+      if (!t || t.length > 300) continue;
+      const m = t.match(/Delivery\s*:\s*([^\.\|\n]{3,60})/i);
+      if (m) {
+        const val = m[1].trim().replace(/\.$/, "").trim();
+        if (val.length > 2 && !/free|shipping|credit/i.test(val)) return val;
       }
     }
 
     return "";
+  }
+
+  // ── SHIPPING — MODE B: MODAL (thorough, one click) ───────────
+  function extractShippingFromModal(root) {
+    // Priority 1: "Delivery time" table row (standard shipping modal)
+    // e.g. "Delivery time | May 3-15"
+    for (const row of root.querySelectorAll("tr")) {
+      const cells = Array.from(row.querySelectorAll("td"));
+      for (let i = 0; i < cells.length; i++) {
+        if (/delivery\s*time/i.test(cells[i]?.innerText?.trim())) {
+          const next = cells[i + 1];
+          if (!next) continue;
+          const ariaSpan = next.querySelector("span[aria-label]");
+          if (ariaSpan) {
+            const v = ariaSpan.getAttribute("aria-label")?.trim();
+            if (v && v.length < 80) return v;
+          }
+          const v = next.innerText?.trim().split("\n")[0].trim();
+          if (v && v.length < 80) return v;
+        }
+      }
+    }
+
+    // Priority 2: "Delivery: <date range>" plain text line
+    // Local warehouse modal shows: "Delivery: Apr 29-May 6 | Get a $5.00 credit..."
+    // We want just the date part before the pipe
+    for (const el of root.querySelectorAll("span, div, p")) {
+      if (el.children.length > 4) continue;
+      const t = el.innerText?.trim();
+      if (!t || t.length > 400) continue;
+      const m = t.match(/Delivery\s*:\s*([A-Za-z]+\s+\d{1,2}[-–][A-Za-z]*\s*\d{0,2})/i);
+      if (m) return m[1].trim();
+    }
+
+    // Priority 3: "Fastest delivery in N days" — local warehouse
+    for (const el of root.querySelectorAll("span, div, p")) {
+      if (el.children.length > 3) continue;
+      const t = el.innerText?.trim();
+      if (!t || t.length > 200) continue;
+      const m = t.match(/fastest\s*delivery\s*in\s*(\d+\s*(?:business\s*)?days?)/i);
+      if (m) return "Fastest delivery in " + m[1];
+    }
+
+    // Priority 4: aria-label span with a days range
+    for (const span of root.querySelectorAll("span[aria-label]")) {
+      const v = span.getAttribute("aria-label")?.trim();
+      if (v && BIZ_RANGE_PATTERN.test(v) && v.length < 80) return v;
+    }
+
+    // Priority 5: visible range text in table cells (skip histogram ≤/>/< rows)
+    for (const el of root.querySelectorAll("td, span")) {
+      const t = el.innerText?.trim();
+      if (!t || t.length > 80 || /^[≤<>]/.test(t) || /fastest/i.test(t)) continue;
+      if (BIZ_RANGE_PATTERN.test(t)) return t;
+    }
+
+    return "";
+  }
+
+  async function closeModal(modal) {
+    // Strategy 1: click a visible close button inside the modal
+    const closeSelectors = [
+      '[aria-label="Close"]',
+      '[aria-label="close"]',
+      '[data-testid="modal-close"]',
+      'button[class*="close"]',
+      'button[class*="Close"]',
+      // Temu-specific close icon classes seen in devtools
+      '[class*="_1SgweZv"]',
+      '[class*="closeBtn"]',
+      '[class*="close-btn"]',
+    ];
+
+    // Search inside the modal first, then the whole document
+    const roots = modal ? [modal, document] : [document];
+    for (const root of roots) {
+      for (const sel of closeSelectors) {
+        const btn = root.querySelector(sel);
+        if (btn && btn.offsetParent !== null) {
+          btn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+          await sleep(350);
+          // Check if modal is gone
+          if (!document.querySelector('[role="dialog"]')) return;
+        }
+      }
+    }
+
+    // Strategy 2: Escape on the modal element itself, then document, then body
+    const escEvent = () => new KeyboardEvent("keydown", { key: "Escape", keyCode: 27, bubbles: true, cancelable: true, view: window });
+    if (modal) modal.dispatchEvent(escEvent());
+    await sleep(150);
+    if (!document.querySelector('[role="dialog"]')) return;
+
+    document.dispatchEvent(escEvent());
+    await sleep(150);
+    if (!document.querySelector('[role="dialog"]')) return;
+
+    document.body.dispatchEvent(escEvent());
+    await sleep(150);
+    if (!document.querySelector('[role="dialog"]')) return;
+
+    // Strategy 3: click the backdrop overlay (element behind the modal)
+    // Temu renders a fixed overlay div; click a corner to dismiss
+    const overlay = document.querySelector('[class*="overlay"]') ||
+                    document.querySelector('[class*="Overlay"]') ||
+                    document.querySelector('[class*="backdrop"]') ||
+                    document.querySelector('[class*="mask"]');
+    if (overlay && overlay.offsetParent !== null) {
+      overlay.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      await sleep(300);
+      if (!document.querySelector('[role="dialog"]')) return;
+    }
+
+    // Strategy 4: click just outside the modal box (top-left corner of viewport)
+    document.elementFromPoint(5, 5)?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, view: window, clientX: 5, clientY: 5 })
+    );
+    await sleep(300);
+  }
+
+  async function scrapeShippingViaModal() {
+    // The shipping trigger is ALWAYS inside div.NJajLuUA — the shipping module
+    // directly below the ATC/Buy Now buttons on the product page.
+    // It has role="button" and aria-label starting with "Ships from" or
+    // "Free shipping for this item".
+    // We must NEVER click the top nav "Free shipping >" banner.
+
+    const shippingModule = document.querySelector('[class*="NJajLuUA"]');
+
+    let trigger = null;
+
+    if (shippingModule) {
+      // First choice: the role=button inside the shipping module
+      trigger = shippingModule.querySelector('[role="button"]') ||
+                // Sometimes the whole module div is the clickable element
+                (shippingModule.getAttribute("role") === "button" ? shippingModule : null) ||
+                // Or the chevron ">" anchor/span inside it
+                shippingModule.querySelector('[class*="_1VDbay5B"]') ||
+                shippingModule.querySelector('svg') ?.closest('[role="button"]');
+    }
+
+    // Fallback: find by aria-label containing "Ships from" scoped away from nav/header
+    if (!trigger) {
+      trigger = Array.from(document.querySelectorAll('[role="button"][aria-label]')).find(el => {
+        const label = el.getAttribute("aria-label") || "";
+        // Must say "Ships from" or "Free shipping for this item"
+        if (!/ships\s*from|free\s*shipping\s*for\s*this\s*item/i.test(label)) return false;
+        // Must NOT be inside the top navigation bar
+        let node = el;
+        while (node && node !== document.body) {
+          const tag = node.tagName?.toLowerCase();
+          if (tag === "nav" || tag === "header") return false;
+          const cls = typeof node.className === "string" ? node.className : "";
+          if (/nav|header|topbar|announcement/i.test(cls)) return false;
+          node = node.parentElement;
+        }
+        return true;
+      });
+    }
+
+    if (!trigger) return "";
+
+    try {
+      trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      await sleep(1400);
+
+      const modal =
+        document.querySelector('[role="dialog"]') ||
+        Array.from(document.querySelectorAll("div")).find(el => {
+          const cls = typeof el.className === "string" ? el.className : "";
+          return /modal|Modal|dialog|Dialog/i.test(cls) &&
+                 el.offsetParent !== null &&
+                 (el.querySelector("td") || /delivery/i.test(el.innerText));
+        });
+
+      const result = extractShippingFromModal(modal || document);
+
+      // ── Close the modal — try every method in order ──
+      await closeModal(modal);
+
+      return result;
+    } catch (e) {
+      return "";
+    }
   }
 
   // ── ATC URL ──────────────────────────────────────────────────
@@ -382,7 +432,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const skuFromUrl = urlParams.get("sku_id") || urlParams.get("skuId");
     if (skuFromUrl) return skuFromUrl;
-
     try {
       const nextData = window.__NEXT_DATA__;
       if (nextData) {
@@ -391,7 +440,6 @@
         if (m) return m[1];
       }
     } catch (e) {}
-
     try {
       for (const script of document.querySelectorAll("script:not([src])")) {
         const text = script.textContent || "";
@@ -400,15 +448,12 @@
         if (m) return m[1];
       }
     } catch (e) {}
-
     try {
-      const allEls = document.querySelectorAll("[data-sku-id], [data-skuid], [data-sku]");
-      for (const el of allEls) {
+      for (const el of document.querySelectorAll("[data-sku-id],[data-skuid],[data-sku]")) {
         const sku = el.getAttribute("data-sku-id") || el.getAttribute("data-skuid") || el.getAttribute("data-sku");
         if (sku && /^\d{10,20}$/.test(sku)) return sku;
       }
     } catch (e) {}
-
     return "";
   }
 
@@ -422,32 +467,31 @@
     return url;
   }
 
-  function scrapeAtcUrl() {
-    const goodsId = extractGoodsId();
-    const skuId   = extractSkuId();
-    return buildAtcUrl(goodsId, skuId);
-  }
-
   // ── MAIN ─────────────────────────────────────────────────────
-  async function scrapeAll() {
-    await sleep(1000);
-    // Run price, brand, seller, atcUrl in parallel; shipping needs modal so runs after
+  async function scrapeAll(mode) {
+    await sleep(800);
     const [price, brand, atcUrl] = await Promise.all([
       Promise.resolve(scrapePrice()),
       scrapeBrand(),
-      Promise.resolve(scrapeAtcUrl()),
+      Promise.resolve(buildAtcUrl(extractGoodsId(), extractSkuId())),
     ]);
-    const seller   = scrapeSeller();
-    const shipping = await scrapeShipping();
+    const seller = scrapeSeller();
+    let shipping = "";
+    if (mode === "modal") {
+      shipping = await scrapeShippingViaModal();
+      if (!shipping) shipping = scrapeShippingFromPage();
+    } else {
+      shipping = scrapeShippingFromPage();
+    }
     return { price, brand, seller, shipping, atcUrl };
   }
 
   // ── MESSAGE LISTENER ─────────────────────────────────────────
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === "QUICK_SCRAPE") {
-      window.__temuQuickScraperInjected = false;
-      scrapeAll().then(data => sendResponse(data));
-      return true;
+      scrapeAll(request.shippingMode || "page").then(data => sendResponse(data));
+      return true; // keep channel open for async response
     }
   });
+
 })();
